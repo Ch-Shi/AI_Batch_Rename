@@ -1,6 +1,6 @@
 import requests
-from config import API_URL, API_KEY, MODEL, DEFAULT_PROMPT, MAX_RETRIES
-from logger import logger
+from src.config import API_URL, API_KEY, MODEL, DEFAULT_PROMPT, MAX_RETRIES
+from src.utils.logger import logger
 
 def get_image_caption(image_data_uri):
     """

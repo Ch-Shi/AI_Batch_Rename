@@ -1,6 +1,6 @@
 from PIL import Image
 import io, base64
-from config import MAX_IMAGE_SIZE
+from src.config import MAX_IMAGE_SIZE
 
 def compress_image_to_base64(image_path):
     """

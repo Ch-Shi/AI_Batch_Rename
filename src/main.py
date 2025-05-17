@@ -1,10 +1,10 @@
 import os
 import argparse
-from config import config
-from core.image_utils import compress_image_to_base64
-from core.ai_client import get_image_caption
-from core.naming import generate_new_name
-from utils.logger import logger
+from src.config import RENAME_STRATEGY, ADD_INDEX, ALLOWED_EXTENSIONS
+from src.core.image_utils import compress_image_to_base64
+from src.core.ai_client import get_image_caption
+from src.core.naming import generate_new_name
+from src.utils.logger import logger
 
 def main():
     parser = argparse.ArgumentParser(description="批量图像智能重命名脚本")
@@ -15,8 +15,8 @@ def main():
 
     input_dir = args.input_dir
     # 确定命名策略和是否添加编号（命令行参数优先，否则采用配置默认值）
-    mode = args.mode if args.mode else config.RENAME_STRATEGY
-    add_index_flag = True if args.add_index else config.ADD_INDEX
+    mode = args.mode if args.mode else RENAME_STRATEGY
+    add_index_flag = True if args.add_index else ADD_INDEX
 
     logger.info(f"开始处理目录: {input_dir}, 策略: {mode}, 添加编号: {add_index_flag}")
     if not os.path.isdir(input_dir):
@@ -28,7 +28,7 @@ def main():
     for root, dirs, files in os.walk(input_dir):
         for filename in files:
             ext = os.path.splitext(filename)[1].lower()
-            if ext in config.ALLOWED_EXTENSIONS:
+            if ext in ALLOWED_EXTENSIONS:
                 image_files.append(os.path.join(root, filename))
     if not image_files:
         logger.error("未找到支持的图像文件，请检查输入目录。")
