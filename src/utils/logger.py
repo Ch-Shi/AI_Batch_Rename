@@ -1,5 +1,5 @@
 import logging
-from src.config import LOG_FILE, LOG_LEVEL
+from config import LOG_FILE, LOG_LEVEL
 
 # 设置全局日志记录器
 logger = logging.getLogger("ImageRenamer")

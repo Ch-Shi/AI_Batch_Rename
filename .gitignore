@@ -50,3 +50,5 @@ testing/
 *.bak
 *.swp
 *~.nib 
+
+images_test/

@@ -1,6 +1,7 @@
+import base64
+from io import BytesIO
 from PIL import Image
-import io, base64
-from src.config import MAX_IMAGE_SIZE
+from config import MAX_IMAGE_SIZE
 
 def compress_image_to_base64(image_path):
     """
@@ -20,7 +21,7 @@ def compress_image_to_base64(image_path):
                 new_width = int(MAX_IMAGE_SIZE * width / height)
             img = img.resize((new_width, new_height), Image.LANCZOS)
         # 将图像转换为 WebP 格式并写入字节流:contentReference[oaicite:11]{index=11}:contentReference[oaicite:12]{index=12}
-        byte_stream = io.BytesIO()
+        byte_stream = BytesIO()
         img.save(byte_stream, format='WEBP')
         img_bytes = byte_stream.getvalue()
         # 编码为 base64 字符串

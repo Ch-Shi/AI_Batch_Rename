@@ -1,6 +1,7 @@
 import requests
-from src.config import API_URL, API_KEY, MODEL, DEFAULT_PROMPT, MAX_RETRIES
-from src.utils.logger import logger
+import time
+from config import API_URL, API_KEY, MODEL, DEFAULT_PROMPT, MAX_RETRIES
+from utils.logger import logger
 
 def get_image_caption(image_data_uri):
     """
@@ -8,7 +9,7 @@ def get_image_caption(image_data_uri):
     参数 image_data_uri: 图像数据的 base64 data URI 字符串。
     返回模型生成的简短名称（字符串）。请求或解析失败则抛出异常。
     """
-    # 构造请求消息内容：包含图像（base64 URI）和文本提示:contentReference[oaicite:14]{index=14}
+    # 构造请求消息内容：包含图像（base64 URI）和文本提示
     messages = [
         {
             "role": "user",
@@ -36,9 +37,14 @@ def get_image_caption(image_data_uri):
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
-    # 尝试发送请求，失败则按配置重试:contentReference[oaicite:15]{index=15}
+    # 尝试发送请求，失败则按配置重试
     for attempt in range(1, MAX_RETRIES + 1):
         try:
+            # 添加请求间隔，使用指数退避策略
+            if attempt > 1:
+                wait_time = 2 ** (attempt - 1)  # 2, 4, 8 秒
+                logger.info(f"等待 {wait_time} 秒后重试...")
+                time.sleep(wait_time)
             response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
         except Exception as e:
             logger.warning(f"第{attempt}次请求异常: {e}")

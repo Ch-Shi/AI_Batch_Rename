@@ -1,4 +1,17 @@
 import os
+import re
+
+def clean_filename(filename):
+    """
+    清理文件名，移除Windows不允许的特殊字符
+    """
+    # 移除Windows不允许的字符: \ / : * ? " < > |
+    filename = re.sub(r'[\\/:*?"<>|]', '', filename)
+    # 移除其他可能导致问题的字符
+    filename = re.sub(r'[\r\n\t]', '', filename)
+    # 移除首尾空格和点
+    filename = filename.strip('. ')
+    return filename
 
 def generate_new_name(original_path, suggestion, strategy="override", add_index=False, index=None):
     """
@@ -14,7 +27,7 @@ def generate_new_name(original_path, suggestion, strategy="override", add_index=
     orig_base = os.path.splitext(os.path.basename(original_path))[0]
     ext = os.path.splitext(original_path)[1]  # 保留原始扩展名（含点）
     # 清理模型建议的名称字符串（去除引号及多余空格）
-    name = suggestion.strip().strip('\"“”')
+    name = clean_filename(suggestion.strip().strip('\"""'))
     # 按策略生成新文件名（无扩展名部分）
     if strategy == "override":
         # 覆盖原名：直接使用建议名；如建议名为空则用原名

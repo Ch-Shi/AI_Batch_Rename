@@ -1,10 +1,11 @@
 import os
 import argparse
-from src.config import RENAME_STRATEGY, ADD_INDEX, ALLOWED_EXTENSIONS
-from src.core.image_utils import compress_image_to_base64
-from src.core.ai_client import get_image_caption
-from src.core.naming import generate_new_name
-from src.utils.logger import logger
+import time
+from config import RENAME_STRATEGY, ADD_INDEX, ALLOWED_EXTENSIONS
+from core.image_utils import compress_image_to_base64
+from core.ai_client import get_image_caption
+from core.naming import generate_new_name
+from utils.logger import logger
 
 def main():
     parser = argparse.ArgumentParser(description="批量图像智能重命名脚本")
@@ -54,9 +55,15 @@ def main():
             os.rename(file_path, new_path)
             success_count += 1
             logger.info(f"[{idx}/{total}] 重命名成功: {os.path.basename(file_path)} -> {os.path.basename(new_path)}")
+            # 添加处理间隔，避免触发API限流
+            if idx < total:  # 如果不是最后一张图片
+                time.sleep(3)  # 等待3秒再处理下一张
         except Exception as e:
             failure_count += 1
             logger.error(f"[{idx}/{total}] 重命名失败: {os.path.basename(file_path)} - 错误: {e}")
+            # 失败后也等待一段时间
+            if idx < total:
+                time.sleep(3)
     logger.info(f"处理完成。成功: {success_count} 张, 失败: {failure_count} 张。")
 
 if __name__ == "__main__":
