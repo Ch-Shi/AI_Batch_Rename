@@ -59,13 +59,29 @@ def find_image_folders(images_root):
     return [os.path.join(images_root, d) for d in os.listdir(images_root)
             if d.endswith('.info') and os.path.isdir(os.path.join(images_root, d))]
 
+def build_id2name_map(eagle_metadata):
+    """递归构建 目录ID->名称 的映射"""
+    id2name = {}
+    def dfs(folders):
+        for folder in folders:
+            id2name[folder['id']] = folder['name']
+            if folder.get('children'):
+                dfs(folder['children'])
+    dfs(eagle_metadata['folders'])
+    return id2name
+
 def process_eagle_rename(library_path, target_folder_ids):
     # 1. 读取 Eagle 根 metadata.json
     with open(os.path.join(library_path, 'metadata.json'), 'r', encoding='utf-8') as f:
         eagle_metadata = json.load(f)
     all_target_ids = get_all_subfolder_ids(target_folder_ids, eagle_metadata)
-    print(f"\n目标目录ID列表：{target_folder_ids}")
-    print(f"包含子目录后的完整ID列表：{all_target_ids}")
+    id2name = build_id2name_map(eagle_metadata)
+    print("\n目标目录：")
+    for tid in target_folder_ids:
+        print(f"- {tid}：{id2name.get(tid, '[未知目录]')}")
+    print("包含子目录：")
+    for tid in all_target_ids:
+        print(f"- {tid}：{id2name.get(tid, '[未知目录]')}")
 
     # 2. 遍历所有图片文件夹
     images_root = os.path.join(library_path, 'images')
