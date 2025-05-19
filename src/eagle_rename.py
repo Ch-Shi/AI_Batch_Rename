@@ -141,13 +141,10 @@ if __name__ == "__main__":
             if eagle_root and os.path.exists(os.path.join(eagle_root, 'metadata.json')):
                 break
             print("未能识别为有效的 Eagle 资料库目录，请重新输入或拖入 Eagle 文件：")
-    while not os.path.exists(eagle_root):
-        print("Error: Directory does not exist! Please re-enter:")
-        eagle_root = input().strip()
     # 目录链接优先从环境变量获取
     folder_links = os.environ.get("EAGLE_FOLDER_LINKS")
     if not folder_links:
-        print("Please paste Eagle folder links here, separated by space. Then press Enter:")
+        print("请粘贴 Eagle 目录链接（用空格分隔多个链接），然后回车：")
         folder_links = input().strip()
     target_folder_ids = parse_folder_links(folder_links)
     # 打印目录树供用户确认
@@ -155,4 +152,4 @@ if __name__ == "__main__":
         eagle_metadata = json.load(f)
     print_folder_tree(target_folder_ids, eagle_metadata)
     process_eagle_rename(eagle_root, target_folder_ids)
-    print("Batch renaming completed!") 
+    print("批量重命名完成！") 
