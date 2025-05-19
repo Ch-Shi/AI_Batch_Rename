@@ -127,6 +127,10 @@ if not exist "%folder%" (
 echo.
 echo 正在处理图片...
 python src/main.py -i "%folder%" -m %rename_mode% %add_index%
+if errorlevel 1 (
+    echo 错误：处理失败，请检查日志文件！
+    pause
+)
 pause
 goto main_menu
 
@@ -146,10 +150,15 @@ if not exist "%eagle_root%" (
 echo.
 echo 请粘贴 Eagle 目录链接（用空格分隔多个链接），然后回车：
 python src/eagle_rename.py --root "%eagle_root%" --mode %rename_mode% %add_index%
+if errorlevel 1 (
+    echo 错误：Eagle 批量重命名失败，请检查日志！
+    pause
+)
 pause
 goto main_menu
 
 :end
 echo 正在关闭 Ollama 服务...
 taskkill /F /IM ollama.exe >nul 2>&1
+pause
 exit 
