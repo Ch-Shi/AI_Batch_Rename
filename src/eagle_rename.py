@@ -4,7 +4,7 @@ import json
 import argparse
 from collections import defaultdict
 from core.ai_client import AIClient
-from config import USE_OLLAMA, MAX_RETRIES
+from config import USE_OLLAMA, MAX_RETRIES, SUPPORTED_FORMATS
 from tqdm import tqdm
 from colorama import init, Fore, Style
 
@@ -124,10 +124,22 @@ def process_eagle_rename(library_path, target_folder_ids):
         ext = meta['ext']
         main_img = os.path.join(folder, f"{old_name}.{ext}")
         thumb_img = os.path.join(folder, f"{old_name}_thumbnail.{ext}")
+        # 跳过非图片格式
+        if not any(main_img.lower().endswith(e) for e in SUPPORTED_FORMATS):
+            skipped_images += 1
+            continue
         # AI生成新名字，组内重名检测
         retry = 0
         while True:
-            suggestion = ai_client.analyze_image(main_img)['description']
+            try:
+                suggestion = ai_client.analyze_image(main_img)['description']
+            except Exception as e:
+                print(Fore.RED + f"[ERROR] 图像分析失败: {e}")
+                skipped_images += 1
+                suggestion = None
+                break
+            if suggestion is None:
+                break
             new_name = suggestion.strip().replace(' ', '')
             if new_name not in group_used_names[group_id]:
                 break
@@ -135,6 +147,8 @@ def process_eagle_rename(library_path, target_folder_ids):
             if retry >= MAX_RETRIES:
                 new_name = f"{new_name}_{retry+1}"
                 break
+        if suggestion is None:
+            continue
         # 记录新名字
         group_used_names[group_id].add(new_name)
         # 修改metadata.json
