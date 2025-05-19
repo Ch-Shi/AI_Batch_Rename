@@ -1,125 +1,131 @@
-# 图像智能重命名工具
+# AI Image Batch Rename Tool
 
-这是一个基于 AI 的图像智能重命名工具，支持使用本地 Ollama 服务或硅基流动 API 来分析和重命名图片。
+[English](README.md) | [中文](README_ZH.md)
 
-## 功能特点
+An AI-powered image renaming tool that supports both local Ollama service and Silicon Flow API for image analysis and renaming.
 
-- 支持多种图片格式（jpg, jpeg, png, gif, bmp, webp）
-- 提供多种重命名模式：
-  - 覆盖模式：直接使用 AI 生成的新名称
-  - 前缀模式：保留原文件名，添加 AI 生成的新名称
-  - 序号模式：新名称后添加序号（001-999）
-- 支持批量处理
-- 实时显示处理进度
-- 详细的错误日志记录
-- 支持本地 Ollama 服务和硅基流动 API
+## Features
 
-## 系统要求
+- Supports multiple image formats (jpg, jpeg, png, gif, bmp, webp)
+- Multiple renaming modes:
+  - Override mode: Use AI-generated names directly
+  - Prefix mode: Keep original filename with AI-generated name as prefix
+  - Index mode: Add sequential numbers (001-999) to new names
+- Batch processing support
+- Real-time progress display
+- Detailed error logging
+- Support for both local Ollama service and Silicon Flow API
 
-- Python 3.8 或更高版本
-- Windows 操作系统
-- 如果使用 Ollama 服务，需要安装 Ollama
+## System Requirements
 
-## 安装步骤
+- Python 3.8 or higher
+- Windows operating system
+- Ollama (if using Ollama service)
 
-1. 克隆或下载本项目到本地
+## Installation
 
-2. 安装依赖包：
+1. Clone or download this repository
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. 如果使用 Ollama 服务：
-   - 安装 Ollama（https://ollama.ai/）
-   - 下载所需模型：
+3. If using Ollama service:
+   - Install Ollama (https://ollama.ai/)
+   - Download required model:
      ```bash
      ollama pull qwen2.5vl:3b
      ```
 
-4. 如果使用硅基流动 API：
-   - 在 `src/config.py` 中配置您的 API Key
-   - 将 `USE_OLLAMA` 设置为 `False`
+4. If using Silicon Flow API:
+   - Configure your API Key in `src/config.py`
+   - Set `USE_OLLAMA` to `False`
 
-## 使用方法
+## Usage
 
-### 方法一：使用批处理文件（推荐）
+### Method 1: Using Batch File (Recommended)
 
-1. 双击运行 `start.bat`
-2. 在菜单中选择重命名模式：
-   - [1] 覆盖模式：直接使用新名称
-   - [2] 前缀模式：保留原文件名
-   - [3] 添加序号：新名称后添加序号
-   - [4] 退出程序
-3. 将图片文件夹拖放到窗口中，按回车开始处理
+1. Double-click to run `start.bat`
+2. Select renaming mode from the menu:
+   - [1] Override mode: Use new name directly
+   - [2] Prefix mode: Keep original filename
+   - [3] Add index: Add sequential numbers
+   - [4] Exit program
+3. Drag and drop image folder into the window, press Enter to start processing
 
-### 方法二：命令行方式
+### Method 2: Command Line
 
 ```bash
-python src/main.py -i "图片文件夹路径" -m [override|prefix] -n
+python src/main.py -i "image_folder_path" -m [override|prefix] -n
 ```
 
-参数说明：
-- `-i` 或 `--input_dir`：指定输入图片文件夹路径（必需）
-- `-m` 或 `--mode`：选择重命名模式（可选）
-  - `override`：覆盖模式（默认）
-  - `prefix`：前缀模式
-- `-n` 或 `--add_index`：添加序号（可选）
+Parameters:
+- `-i` or `--input_dir`: Input image folder path (required)
+- `-m` or `--mode`: Renaming mode (optional)
+  - `override`: Override mode (default)
+  - `prefix`: Prefix mode
+- `-n` or `--add_index`: Add sequential numbers (optional)
 
-## 日志文件
+## Log Files
 
-程序会生成以下日志文件：
-- `rename.log`：主日志文件，记录所有操作
-- `rename_failures.log`：记录重命名失败的文件信息
-- `token_usage.log`：记录 token 使用情况（仅在使用硅基流动 API 时）
+The program generates the following log files:
+- `rename.log`: Main log file, records all operations
+- `rename_failures.log`: Records failed renaming operations
+- `token_usage.log`: Records token usage (only when using Silicon Flow API)
 
-## 配置说明
+## Configuration
 
-配置文件位于 `src/config.py`，主要配置项包括：
+Configuration file is located at `src/config.py`, main settings include:
 
-### 通用配置
-- `SUPPORTED_FORMATS`：支持的图片格式
-- `DEFAULT_MODE`：默认重命名模式
-- `IMAGE_PROCESS_DELAY`：图片处理间隔时间
-- `MAX_OUTPUT_TOKENS`：输出 token 限制
+### General Settings
+- `SUPPORTED_FORMATS`: Supported image formats
+- `DEFAULT_MODE`: Default renaming mode
+- `IMAGE_PROCESS_DELAY`: Delay between image processing
+- `MAX_OUTPUT_TOKENS`: Output token limit
 
-### API 配置
-- `USE_OLLAMA`：是否使用 Ollama 服务
-- `OLLAMA_MODEL`：Ollama 模型名称
-- `SILICON_FLOW_API_KEY`：硅基流动 API 密钥
-- `SILICON_FLOW_MODEL`：硅基流动模型名称
+### API Settings
+- `USE_OLLAMA`: Whether to use Ollama service
+- `OLLAMA_MODEL`: Ollama model name
+- `SILICON_FLOW_API_KEY`: Silicon Flow API key
+- `SILICON_FLOW_MODEL`: Silicon Flow model name
 
-## 注意事项
+## Notes
 
-1. 使用 Ollama 服务时：
-   - 确保 Ollama 服务已启动
-   - 建议使用本地模型以获得更快的处理速度
-   - 没有 token 使用限制
+1. When using Ollama service:
+   - Ensure Ollama service is running
+   - Recommended to use local model for faster processing
+   - No token usage limits
 
-2. 使用硅基流动 API 时：
-   - 需要有效的 API Key
-   - 注意 token 使用限制
-   - 建议适当调整处理间隔时间
+2. When using Silicon Flow API:
+   - Valid API Key required
+   - Be mindful of token usage limits
+   - Adjust processing delay as needed
 
-3. 文件命名：
-   - 新文件名会自动去除非法字符
-   - 如果新文件名已存在，会自动添加时间戳
-   - 建议定期备份重要文件
+3. File naming:
+   - Invalid characters are automatically removed
+   - Timestamp is added if new filename already exists
+   - Regular backups recommended
 
-## 常见问题
+## Troubleshooting
 
-1. 如果遇到 "Ollama 服务未启动" 错误：
-   - 检查 Ollama 是否正确安装
-   - 手动启动 Ollama 服务：`ollama serve`
+1. If "Ollama service not running" error occurs:
+   - Check if Ollama is properly installed
+   - Manually start Ollama service: `ollama serve`
 
-2. 如果处理速度较慢：
-   - 检查网络连接
-   - 调整 `IMAGE_PROCESS_DELAY` 参数
-   - 考虑使用本地 Ollama 服务
+2. If processing is slow:
+   - Check network connection
+   - Adjust `IMAGE_PROCESS_DELAY` parameter
+   - Consider using local Ollama service
 
-3. 如果出现编码错误：
-   - 确保系统使用 UTF-8 编码
-   - 检查文件名是否包含特殊字符
+3. If encoding errors occur:
+   - Ensure system uses UTF-8 encoding
+   - Check for special characters in filenames
 
-## 许可证
+## License
 
-MIT License 
+MIT License
+
+## Chinese Documentation
+
+For Chinese documentation, please see [README_CN.md](README_CN.md). 
