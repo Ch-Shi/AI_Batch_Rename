@@ -181,9 +181,10 @@ def find_eagle_library_root(path):
             return None
         path = parent
 
-if __name__ == "__main__":
+def main(eagle_root=None):
     args = get_args()
-    eagle_root = args.root
+    if eagle_root is None:
+        eagle_root = args.root
     if not eagle_root:
         while True:
             input_path = input().strip()
@@ -192,29 +193,28 @@ if __name__ == "__main__":
                 print(f"\n✓ 已找到 Eagle 资料库：{os.path.basename(eagle_root)}")
                 break
             print("✗ 未能识别为有效的 Eagle 资料库目录，请重新输入或拖入 Eagle 文件：")
-    
     # 确保 eagle_root 是目录而不是文件
     if os.path.isfile(eagle_root):
         eagle_root = os.path.dirname(eagle_root)
-    
     # 确保 eagle_root 是 .library 目录
     if not eagle_root.lower().endswith('.library'):
         eagle_root = find_eagle_library_root(eagle_root)
         if not eagle_root:
             print("✗ 错误：无法找到有效的 Eagle 资料库目录")
             exit(1)
-    
     # 目录链接优先从环境变量获取
     folder_links = os.environ.get("EAGLE_FOLDER_LINKS")
     if not folder_links:
         folder_links = input().strip()
     target_folder_ids = parse_folder_links(folder_links)
-    
     # 打印目录树供用户确认
     print("\n将处理以下目录（及其子目录）：")
     with open(os.path.join(eagle_root, 'metadata.json'), 'r', encoding='utf-8') as f:
         eagle_metadata = json.load(f)
     print_folder_tree(target_folder_ids, eagle_metadata)
     process_eagle_rename(eagle_root, target_folder_ids)
-    print("\n✓ 批量重命名完成！") 
+    print("\n✓ 批量重命名完成！")
+
+if __name__ == "__main__":
+    main() 
     
