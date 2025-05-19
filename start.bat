@@ -2,6 +2,26 @@
 chcp 65001
 title 图像智能重命名工具
 
+echo 正在检查 Python 环境...
+python --version 2>nul | findstr /r "^Python 3" >nul
+if errorlevel 1 (
+    echo 错误：未检测到 Python 3，请安装 Python 3 或更高版本！
+    pause
+    exit /b 1
+)
+
+echo 正在检查依赖包...
+python -c "import requests" >nul 2>&1
+if errorlevel 1 (
+    echo 正在安装依赖包...
+    pip install -r requirements.txt
+    if errorlevel 1 (
+        echo 错误：依赖包安装失败！
+        pause
+        exit /b 1
+    )
+)
+
 echo 正在检查 Ollama 服务...
 tasklist /FI "IMAGENAME eq ollama.exe" 2>NUL | find /I /N "ollama.exe">NUL
 if "%ERRORLEVEL%"=="1" (
@@ -82,6 +102,11 @@ if not exist "%folder%" (
 echo.
 echo 正在处理图片...
 python src/main.py -i "%folder%" -m %mode% %add_index%
+if errorlevel 1 (
+    echo 错误：处理失败，请检查日志文件！
+    pause
+    goto menu
+)
 echo.
 echo 处理完成！
 pause
