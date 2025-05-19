@@ -219,3 +219,4 @@ if __name__ == "__main__":
     print_folder_tree(target_folder_ids, eagle_metadata)
     process_eagle_rename(eagle_root, target_folder_ids)
     print("\n✓ 批量重命名完成！") 
+    
