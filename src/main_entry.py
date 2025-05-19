@@ -11,7 +11,6 @@ def pause():
 
 def main():
     while True:
-        clear()
         print(Fore.CYAN + Style.BRIGHT + "\n==================================")
         print(Fore.CYAN + Style.BRIGHT + "    图像智能批量重命名")
         print(Fore.CYAN + Style.BRIGHT + "==================================")
@@ -21,7 +20,6 @@ def main():
         choice = input(Fore.YELLOW + Style.BRIGHT + "\n请选择主模式 (1-3): ").strip()
         
         if choice == "1":
-            clear()
             print(Fore.GREEN + Style.BRIGHT + "\n请选择命名方式：")
             print(Fore.GREEN + "1. 覆盖模式 - 直接使用 AI 生成的新名称")
             print(Fore.GREEN + "2. 前缀模式 - 在原有文件名前添加 AI 生成的前缀")
@@ -33,7 +31,6 @@ def main():
                 input(Fore.YELLOW + "\n按回车返回...")
                 continue
                 
-            clear()
             folder_path = input(Fore.YELLOW + Style.BRIGHT + "\n请输入要处理的文件夹路径：").strip()
             if not os.path.exists(folder_path):
                 print(Fore.RED + Style.BRIGHT + "文件夹路径不存在！")
@@ -45,11 +42,9 @@ def main():
             input(Fore.YELLOW + "\n按回车返回主菜单...")
             
         elif choice == "2":
-            clear()
             print(Fore.YELLOW + Style.BRIGHT + "\n请输入 " + Fore.CYAN + Style.BRIGHT + "Eagle 资料库根目录路径" + Fore.YELLOW + Style.BRIGHT + "，或直接从 " + Fore.CYAN + Style.BRIGHT + "Eagle 软件窗口" + Fore.YELLOW + Style.BRIGHT + "中拖入任意文件/图片后回车：")
             eagle_root = input().strip()
             
-            clear()
             print(Fore.YELLOW + Style.BRIGHT + "\n请从 " + Fore.CYAN + Style.BRIGHT + "Eagle 软件中复制目录链接" + Fore.YELLOW + Style.BRIGHT + "（可多选，用空格分隔），然后回车：")
             print(Fore.GREEN + Style.BRIGHT + "提示：" + Fore.YELLOW + "在 Eagle 中右键点击目录，选择" + Fore.CYAN + Style.BRIGHT + "「复制链接」" + Fore.YELLOW + "即可获取目录链接")
             folder_links = input().strip()
@@ -62,7 +57,6 @@ def main():
             input(Fore.YELLOW + "\n按回车返回主菜单...")
             
         elif choice == "3":
-            clear()
             print(Fore.GREEN + Style.BRIGHT + "\n感谢使用，再见！")
             break
             

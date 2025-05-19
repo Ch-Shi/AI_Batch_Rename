@@ -75,7 +75,6 @@ def build_id2name_map(eagle_metadata):
     return id2name
 
 def process_eagle_rename(library_path, target_folder_ids):
-    clear()
     # 1. 读取 Eagle 根 metadata.json
     with open(os.path.join(library_path, 'metadata.json'), 'r', encoding='utf-8') as f:
         eagle_metadata = json.load(f)
@@ -88,7 +87,6 @@ def process_eagle_rename(library_path, target_folder_ids):
     for tid in all_target_ids:
         print(Fore.CYAN + f"- {tid}：{id2name.get(tid, '[未知目录]')}")
     input(Fore.YELLOW + "\n请确认以上目录。按回车继续，或按 Ctrl+C 取消。")
-    clear()
 
     # 2. 遍历所有图片文件夹
     images_root = os.path.join(library_path, 'images')
@@ -154,7 +152,6 @@ def process_eagle_rename(library_path, target_folder_ids):
             os.rename(thumb_img, new_thumb_img)
         processed_images += 1
 
-    clear()
     # 打印处理结果统计
     print(Fore.GREEN + f"\n处理完成！")
     print(Fore.GREEN + f"总图片数：{total_images}")
