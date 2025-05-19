@@ -12,26 +12,21 @@ LOG_FILE = 'rename.log'  # 日志文件路径
 LOG_LEVEL = 'INFO'  # 日志级别: DEBUG/INFO/WARNING/ERROR/CRITICAL
 
 # 提示词配置
+# 建议提示词中文数量不超过200个字符
+# 同时需要设置下方的MAX_CONTEXT_LENGTH，提示词长度+系统消息+输出，总长度不超过1000个字符
 DEFAULT_PROMPT = """为这个作品起名 
-
-命名风格统一要求：
+要求：
 1. 文字简洁（不超过六个字）
 2. 富有诗意，表达画面意境而非具象描述
 3. 避免夸张、华丽词汇，使用干净、素雅、意象化的词语
 4. 不带有任何符号
+5. 不要使用xxx图，xxx插画，xxx作品等字样
 具体规则（以下内容仅作参考）：
 - 可从图像中提取一个或多个意象元素进行命名：
   • 主体意象：画面最显著的物体或元素（如：晶石、云门、镜境、水月）  
   • 次要意象：陪衬或烘托主体的元素（如：溪、境、湖、门、镜、石、花）  
   • 色彩氛围：画面的整体色调和感觉（如：云、霞、晨、暮、春、秋）  
   • 场景类型：整体意境或感受（如：梦、境、之境、之溪、之门、之湖）
-
-命名结构组合：
-- 【主体意象 + 场景类型】  
-  示例：晶之溪、云门之境、水月镜境  
-- 或使用单一主体意象：  
-  示例：云门、晶溪、水镜  
-
 请依据以上风格与参考，为每幅图像生成不超过六个字的极简诗意名称。  
 """
 
@@ -45,16 +40,13 @@ INITIAL_RETRY_DELAY = 1.0  # 首次重试的延迟时间（秒）
 MAX_RETRY_DELAY = 3.0  # 最大重试延迟时间（秒）
 IMAGE_PROCESS_DELAY = 0.1  # 处理每张图片之间的延迟时间（秒）
 
-# Token 监控设置
-TOKEN_USAGE_LOG = "token_usage.log"  # token 使用量日志文件
-TOKEN_LIMIT = 80000  # 每分钟 token 限制
-TOKEN_WARNING_THRESHOLD = 0.8  # token 使用量警告阈值（80%）
-TOKEN_RESET_INTERVAL = 60  # token 计数重置间隔（秒）
-MAX_OUTPUT_TOKENS = 40  # 限制输出 token 数量，4个中文字符约需要 12-16 tokens
-
 # 上下文长度设置
+# 提示：修改上下文长度时请注意：
+# 1. 中文字符数 × 2.5 ≈ 所需 token 数
+# 2. 建议预留 100-150 tokens 给系统消息和输出
+# 3. 总长度建议不超过 1000 tokens
 MAX_CONTEXT_LENGTH = 32000  # 模型最大上下文长度
-OPTIMAL_CONTEXT_LENGTH = 100  # 建议的上下文长度
+OPTIMAL_CONTEXT_LENGTH = 500  # 建议的上下文长度（基于当前提示词长度）
 CONTEXT_WARNING_THRESHOLD = 0.9  # 上下文长度警告阈值（90%）
 
 # ============= API 特定配置 =============
@@ -68,6 +60,13 @@ SILICON_FLOW_API_KEY = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # 替换为您的 
 SILICON_FLOW_MODEL = "qwen2.5-vl-72b"  # 硅基流动 API 模型
 SILICON_FLOW_MAX_OUTPUT_TOKENS = 1000  # 硅基流动 API 输出 token 限制
 
+# Token 监控设置（仅在使用硅基流动 API 时生效）
+TOKEN_USAGE_LOG = "token_usage.log"  # token 使用量日志文件
+TOKEN_LIMIT = 80000  # 每分钟 token 限制
+TOKEN_WARNING_THRESHOLD = 0.8  # token 使用量警告阈值（80%）
+TOKEN_RESET_INTERVAL = 60  # token 计数重置间隔（秒）
+MAX_OUTPUT_TOKENS = 40  # 限制输出 token 数量，4个中文字符约需要 12-16 tokens
+
 # Ollama 配置
 OLLAMA_BASE_URL = "http://localhost:11434/api/generate"  # Ollama API 基础 URL
-OLLAMA_MODEL = "qwen2.5vl:3b"  # Ollama 模型名称
+OLLAMA_MODEL = "qwen2.5vl:7b"  # Ollama 模型名称

@@ -3,7 +3,8 @@ import logging
 from datetime import datetime
 from config import (
     TOKEN_USAGE_LOG, TOKEN_LIMIT, TOKEN_WARNING_THRESHOLD, TOKEN_RESET_INTERVAL,
-    MAX_CONTEXT_LENGTH, OPTIMAL_CONTEXT_LENGTH, CONTEXT_WARNING_THRESHOLD
+    MAX_CONTEXT_LENGTH, OPTIMAL_CONTEXT_LENGTH, CONTEXT_WARNING_THRESHOLD,
+    USE_OLLAMA
 )
 
 class TokenMonitor:
@@ -36,6 +37,9 @@ class TokenMonitor:
 
     def check_and_reset(self):
         """检查是否需要重置计数器"""
+        if USE_OLLAMA:  # 如果使用 Ollama，不进行 token 监控
+            return
+            
         current_time = time.time()
         if current_time - self.last_reset_time >= TOKEN_RESET_INTERVAL:
             if self.current_tokens > 0:  # 只在有使用量时记录
@@ -45,6 +49,9 @@ class TokenMonitor:
 
     def add_tokens(self, tokens):
         """添加使用的 token 数量"""
+        if USE_OLLAMA:  # 如果使用 Ollama，不进行 token 监控
+            return
+            
         self.check_and_reset()
         self.current_tokens += tokens
         
@@ -66,6 +73,14 @@ class TokenMonitor:
 
     def get_usage_stats(self):
         """获取当前使用统计信息"""
+        if USE_OLLAMA:  # 如果使用 Ollama，返回空统计信息
+            return {
+                'current_tokens': 0,
+                'remaining_tokens': 0,
+                'usage_percentage': 0,
+                'time_until_reset': 0
+            }
+            
         self.check_and_reset()
         return {
             'current_tokens': self.current_tokens,
