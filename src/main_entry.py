@@ -3,10 +3,8 @@ import sys
 import subprocess
 import eagle_rename
 from colorama import init, Fore, Style
+from utils import clear
 init(autoreset=True)
-
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
 
 def pause():
     input("\n按回车键继续...")

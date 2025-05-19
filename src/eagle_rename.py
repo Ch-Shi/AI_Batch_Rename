@@ -7,7 +7,7 @@ from core.ai_client import AIClient
 from config import USE_OLLAMA, MAX_RETRIES
 from tqdm import tqdm
 from colorama import init, Fore, Style
-from src.main_entry import clear
+from utils import clear
 
 init(autoreset=True)
 
