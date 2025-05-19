@@ -68,5 +68,5 @@ SILICON_FLOW_MODEL = "qwen2.5-vl-72b"  # 硅基流动 API 模型
 SILICON_FLOW_MAX_OUTPUT_TOKENS = 1000  # 硅基流动 API 输出 token 限制
 
 # Ollama 配置
-OLLAMA_API_URL = "http://localhost:11434/api/generate"
+OLLAMA_BASE_URL = "http://localhost:11434/api/generate"  # Ollama API 基础 URL
 OLLAMA_MODEL = "qwen2.5vl:3b"  # Ollama 模型名称

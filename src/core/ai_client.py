@@ -44,7 +44,7 @@ class AIClient:
                 base64_image = base64.b64encode(image_data).decode('utf-8')
             
             # 构建请求
-            url = f"{self.ollama_base_url}/api/generate"
+            url = self.ollama_base_url  # 直接使用配置的 URL，不再添加 /api/generate
             headers = {
                 "Content-Type": "application/json"
             }
