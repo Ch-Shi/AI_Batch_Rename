@@ -6,6 +6,9 @@ from collections import defaultdict
 from core.ai_client import AIClient
 from config import USE_OLLAMA, MAX_RETRIES
 from tqdm import tqdm
+from colorama import init, Fore, Style
+
+init(autoreset=True)
 
 def parse_folder_links(links):
     """解析用户输入，提取所有 eagle://folder/xxxxxx 目录ID，支持空格分隔"""
@@ -76,13 +79,13 @@ def process_eagle_rename(library_path, target_folder_ids):
         eagle_metadata = json.load(f)
     all_target_ids = get_all_subfolder_ids(target_folder_ids, eagle_metadata)
     id2name = build_id2name_map(eagle_metadata)
-    print("\n目标目录：")
+    print(Fore.CYAN + Style.BRIGHT + "\n目标目录：")
     for tid in target_folder_ids:
-        print(f"- {tid}：{id2name.get(tid, '[未知目录]')}")
-    print("包含子目录：")
+        print(Fore.CYAN + f"- {tid}：{id2name.get(tid, '[未知目录]')}")
+    print(Fore.CYAN + "包含子目录：")
     for tid in all_target_ids:
-        print(f"- {tid}：{id2name.get(tid, '[未知目录]')}")
-    input("\n请确认以上目录。按回车继续，或按 Ctrl+C 取消。")
+        print(Fore.CYAN + f"- {tid}：{id2name.get(tid, '[未知目录]')}")
+    input(Fore.YELLOW + "\n请确认以上目录。按回车继续，或按 Ctrl+C 取消。")
 
     # 2. 遍历所有图片文件夹
     images_root = os.path.join(library_path, 'images')
@@ -149,13 +152,13 @@ def process_eagle_rename(library_path, target_folder_ids):
         processed_images += 1
 
     # 打印处理结果统计
-    print(f"\n处理完成！")
-    print(f"总图片数：{total_images}")
-    print(f"已处理：{processed_images}")
-    print(f"已跳过：{skipped_images}（不在目标目录中）")
-    print(f"已删除：{deleted_images}（标记为删除的图片）")
-    input("\n按回车键返回主菜单...")
-    print("\n✓ 批量重命名完成！")
+    print(Fore.GREEN + f"\n处理完成！")
+    print(Fore.GREEN + f"总图片数：{total_images}")
+    print(Fore.GREEN + f"已处理：{processed_images}")
+    print(Fore.YELLOW + f"已跳过：{skipped_images}（不在目标目录中）")
+    print(Fore.YELLOW + f"已删除：{deleted_images}（标记为删除的图片）")
+    input(Fore.YELLOW + "\n按回车键返回主菜单...")
+    print(Fore.GREEN + "\n✓ 批量重命名完成！")
 
 def print_folder_tree(root_ids, eagle_metadata):
     """打印目录树结构，供用户确认"""
