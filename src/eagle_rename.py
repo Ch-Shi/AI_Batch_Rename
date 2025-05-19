@@ -186,7 +186,7 @@ if __name__ == "__main__":
     eagle_root = args.root
     if not eagle_root:
         while True:
-            input_path = input("请输入 Eagle 资料库根目录路径，或直接从 Eagle 软件窗口中拖入任意文件/图片后回车：\n").strip()
+            input_path = input().strip()
             eagle_root = find_eagle_library_root(input_path)
             if eagle_root and os.path.exists(os.path.join(eagle_root, 'metadata.json')):
                 print(f"\n✓ 已找到 Eagle 资料库：{os.path.basename(eagle_root)}")
@@ -207,8 +207,6 @@ if __name__ == "__main__":
     # 目录链接优先从环境变量获取
     folder_links = os.environ.get("EAGLE_FOLDER_LINKS")
     if not folder_links:
-        print("\n请从 Eagle 软件中复制目录链接（可多选，用空格分隔），然后回车：")
-        print("提示：在 Eagle 中右键点击目录，选择「复制链接」即可获取目录链接")
         folder_links = input().strip()
     target_folder_ids = parse_folder_links(folder_links)
     
