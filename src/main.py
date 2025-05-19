@@ -11,10 +11,9 @@ from config import (
 )
 from core.image_utils import compress_image_to_base64
 from core.ai_client import AIClient
-from core.naming import generate_new_name
+from core.naming import generate_new_name, NameManager
 from utils.logger import logger
 from token_monitor import token_monitor
-from utils.name_manager import NameManager
 
 def get_image_files(directory):
     """获取目录下所有支持的图片文件"""
