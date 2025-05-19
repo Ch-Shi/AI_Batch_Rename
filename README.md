@@ -1,6 +1,6 @@
 # 批量图像智能重命名工具
 
-这是一个基于 AI 的批量图像重命名工具，可以自动分析图像内容并生成合适的中文名称。该工具使用 Qwen2-VL-7B-Instruct 模型来理解图像内容，并生成描述性的文件名。
+这是一个基于 AI 的批量图像重命名工具，可以自动分析图像内容并生成合适的中文名称。该工具支持使用本地的 Ollama 服务或硅基流动 API 来理解图像内容，并生成描述性的文件名。
 
 ## 功能特点
 
@@ -10,6 +10,7 @@
 - 可选的序号添加功能
 - 详细的日志记录
 - 支持多种图像格式
+- 支持本地 Ollama 服务和硅基流动 API
 
 ## 安装步骤
 
@@ -24,7 +25,14 @@ cd [仓库目录]
 pip install -r requirements.txt
 ```
 
-3. 配置 API 密钥：
+3. 安装 Ollama（如果使用本地 Ollama 服务）：
+   - 访问 [Ollama 官网](https://ollama.com) 下载并安装 Ollama
+   - 拉取 Qwen2.5VL-7B 模型：
+   ```bash
+   ollama pull qwen2.5vl:7b
+   ```
+
+4. 配置 API 密钥（如果使用硅基流动 API）：
 在 `src/config.py` 中设置您的 API 密钥：
 ```python
 API_KEY = "您的API密钥"
@@ -48,6 +56,24 @@ python src/main.py -i <图像目录路径> [-m <命名策略>] [-n]
   - 不指定时使用配置文件中的默认策略
 
 - `-n, --add_index`：可选。添加此参数时，将在生成的文件名末尾增加编号序号（从1开始递增的三位数字）。
+
+### 配置说明
+
+在 `src/config.py` 中可以配置以下选项：
+
+```python
+# 选择使用的 AI 服务
+USE_OLLAMA = True  # True 使用本地 Ollama，False 使用硅基流动 API
+
+# Ollama 配置
+OLLAMA_BASE_URL = "http://localhost:11434"  # Ollama 服务地址
+OLLAMA_MODEL = "qwen2.5vl:7b"  # 使用的 Ollama 模型
+
+# 文件处理配置
+SUPPORTED_FORMATS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+DEFAULT_MODE = 'override'  # 默认命名策略
+ADD_INDEX = False  # 是否添加序号
+```
 
 ### 命名策略示例
 
@@ -94,11 +120,19 @@ python src/main.py -i photos/ -m prefix -n
 
 ## 注意事项
 
-1. 确保有稳定的网络连接
-2. 正确配置 API 密钥
-3. 处理大量图片时可能需要较长时间，请耐心等待
-4. 建议在处理重要文件前先进行测试
-5. 如遇到问题，请查看日志文件了解详细信息
+1. 如果使用本地 Ollama 服务：
+   - 确保 Ollama 服务已启动
+   - 确保已下载所需的模型
+   - 确保 Ollama 服务地址配置正确
+
+2. 如果使用硅基流动 API：
+   - 确保有稳定的网络连接
+   - 正确配置 API 密钥
+
+3. 其他注意事项：
+   - 处理大量图片时可能需要较长时间，请耐心等待
+   - 建议在处理重要文件前先进行测试
+   - 如遇到问题，请查看日志文件了解详细信息
 
 ## 项目结构
 

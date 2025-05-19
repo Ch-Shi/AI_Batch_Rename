@@ -1,70 +1,127 @@
 import os
+import sys
 import argparse
 import time
-from config import RENAME_STRATEGY, ADD_INDEX, ALLOWED_EXTENSIONS
+from datetime import datetime
+from tqdm import tqdm
+from config import (
+    DEFAULT_MODE, ADD_INDEX, ALLOWED_EXTENSIONS,
+    IMAGE_PROCESS_DELAY, TOKEN_WARNING_THRESHOLD,
+    USE_OLLAMA
+)
 from core.image_utils import compress_image_to_base64
-from core.ai_client import get_image_caption
+from core.ai_client import AIClient
 from core.naming import generate_new_name
 from utils.logger import logger
+from token_monitor import token_monitor
+
+def get_image_files(directory):
+    """获取目录下所有支持的图片文件"""
+    image_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if any(file.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS):
+                image_files.append(os.path.join(root, file))
+    return sorted(image_files)
+
+def process_image(image_path, ai_client, mode, add_index, index=None):
+    """处理单个图片"""
+    try:
+        # 这里添加您的图片处理逻辑
+        # 假设每次处理使用约 1000 tokens
+        estimated_tokens = 1000
+        token_monitor.add_tokens(estimated_tokens)
+        
+        # 获取当前使用统计
+        stats = token_monitor.get_usage_stats()
+        if stats['usage_percentage'] >= TOKEN_WARNING_THRESHOLD * 100:
+            print(f"警告：Token 使用量已达到 {stats['usage_percentage']:.1f}%")
+            time.sleep(IMAGE_PROCESS_DELAY * 2)  # 增加延迟时间
+        
+        # 分析图像并获取描述
+        result = ai_client.analyze_image(image_path)
+        suggestion = result["description"]
+        
+        # 根据策略生成新的文件名
+        new_path = generate_new_name(
+            image_path, suggestion,
+            strategy=mode, add_index=add_index,
+            index=index
+        )
+        
+        # 重命名文件
+        os.rename(image_path, new_path)
+        logger.info(f"重命名成功: {os.path.basename(image_path)} -> {os.path.basename(new_path)}")
+        return True, suggestion
+    except Exception as e:
+        error_msg = f"重命名失败: {os.path.basename(image_path)} - 错误: {str(e)}"
+        logger.error(error_msg)
+        # 记录失败信息到专门的失败日志文件
+        with open('rename_failures.log', 'a', encoding='utf-8') as f:
+            f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {error_msg}\n")
+        return False, str(e)
 
 def main():
-    parser = argparse.ArgumentParser(description="批量图像智能重命名脚本")
-    parser.add_argument("-i", "--input_dir", required=True, help="要处理的图像文件夹路径")
-    parser.add_argument("-m", "--mode", choices=["override", "prefix"], help="命名策略：override(覆盖原名)或prefix(保留前缀)")
-    parser.add_argument("-n", "--add_index", action="store_true", help="是否在文件名中添加编号")
+    parser = argparse.ArgumentParser(description='批量图像智能重命名工具')
+    parser.add_argument('-i', '--input_dir', required=True, help='输入目录路径')
+    parser.add_argument('-m', '--mode', default=DEFAULT_MODE, choices=['override', 'prefix'],
+                      help='命名策略：override（覆盖）或 prefix（前缀）')
+    parser.add_argument('-n', '--add_index', action='store_true', help='是否添加序号')
     args = parser.parse_args()
 
-    input_dir = args.input_dir
-    # 确定命名策略和是否添加编号（命令行参数优先，否则采用配置默认值）
-    mode = args.mode if args.mode else RENAME_STRATEGY
-    add_index_flag = True if args.add_index else ADD_INDEX
-
-    logger.info(f"开始处理目录: {input_dir}, 策略: {mode}, 添加编号: {add_index_flag}")
-    if not os.path.isdir(input_dir):
-        logger.error(f"输入路径不存在或不是文件夹: {input_dir}")
+    # 检查输入目录
+    if not os.path.exists(args.input_dir):
+        print(f"错误：目录 '{args.input_dir}' 不存在！")
         return
 
-    # 遍历输入目录及子目录，收集所有符合条件的图像文件路径
-    image_files = []
-    for root, dirs, files in os.walk(input_dir):
-        for filename in files:
-            ext = os.path.splitext(filename)[1].lower()
-            if ext in ALLOWED_EXTENSIONS:
-                image_files.append(os.path.join(root, filename))
+    # 获取所有图片文件
+    image_files = get_image_files(args.input_dir)
     if not image_files:
-        logger.error("未找到支持的图像文件，请检查输入目录。")
+        print(f"错误：在目录 '{args.input_dir}' 中未找到支持的图片文件！")
         return
 
-    total = len(image_files)
+    print(f"\n找到 {len(image_files)} 个图片文件")
+    print(f"使用模式: {args.mode}")
+    if args.add_index:
+        print("已启用序号添加")
+
+    # 初始化 AI 客户端
+    ai_client = AIClient(use_ollama=USE_OLLAMA)
+
+    # 处理图片
     success_count = 0
-    failure_count = 0
-    # 批量处理每个图像文件
-    for idx, file_path in enumerate(image_files, start=1):
-        try:
-            # 压缩图像并获取 base64 数据URI
-            data_uri = compress_image_to_base64(file_path)
-            # 调用模型获取图像的名称建议
-            suggestion = get_image_caption(data_uri)
-            # 根据策略生成新的文件名（完整路径）
-            new_path = generate_new_name(
-                file_path, suggestion,
-                strategy=mode, add_index=add_index_flag,
-                index=(idx if add_index_flag else None)
+    fail_count = 0
+    index = 1 if args.add_index else None
+
+    print("\n开始处理图片...")
+    with tqdm(total=len(image_files), desc="处理进度") as pbar:
+        for image_path in image_files:
+            success, result = process_image(
+                image_path, ai_client, args.mode, args.add_index, index
             )
-            # 重命名文件
-            os.rename(file_path, new_path)
-            success_count += 1
-            logger.info(f"[{idx}/{total}] 重命名成功: {os.path.basename(file_path)} -> {os.path.basename(new_path)}")
-            # 添加处理间隔，避免触发API限流
-            if idx < total:  # 如果不是最后一张图片
-                time.sleep(3)  # 等待3秒再处理下一张
-        except Exception as e:
-            failure_count += 1
-            logger.error(f"[{idx}/{total}] 重命名失败: {os.path.basename(file_path)} - 错误: {e}")
-            # 失败后也等待一段时间
-            if idx < total:
-                time.sleep(3)
-    logger.info(f"处理完成。成功: {success_count} 张, 失败: {failure_count} 张。")
+            
+            if success:
+                success_count += 1
+                if args.add_index:
+                    index += 1
+            else:
+                fail_count += 1
+            
+            pbar.update(1)
+            pbar.set_postfix({
+                "成功": success_count,
+                "失败": fail_count,
+                "当前": os.path.basename(image_path)
+            })
+            
+            time.sleep(IMAGE_PROCESS_DELAY)
+
+    # 输出统计信息
+    print(f"\n处理完成！")
+    print(f"成功: {success_count} 个文件")
+    print(f"失败: {fail_count} 个文件")
+    if fail_count > 0:
+        print("\n请查看 rename.log 文件了解详细错误信息")
 
 if __name__ == "__main__":
     main()
