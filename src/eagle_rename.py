@@ -119,11 +119,28 @@ def print_folder_tree(root_ids, eagle_metadata):
     print("\nPlease confirm the above folders. Press Enter to continue, or Ctrl+C to cancel.")
     input()
 
+def find_eagle_library_root(path):
+    """从任意路径向上查找，直到找到以 .library 结尾的文件夹"""
+    path = os.path.abspath(path)
+    while True:
+        if os.path.isdir(path) and path.lower().endswith('.library'):
+            return path
+        parent = os.path.dirname(path)
+        if parent == path:
+            # 已经到根目录还没找到
+            return None
+        path = parent
+
 if __name__ == "__main__":
     args = get_args()
     eagle_root = args.root
     if not eagle_root:
-        eagle_root = input("Please enter the path to your Eagle library root folder (e.g. E:/AIGC_Project/Library):\n").strip()
+        while True:
+            input_path = input("请输入 Eagle 资料库根目录路径，或直接拖入任意 Eagle 文件/图片后回车：\n").strip().strip('"')
+            eagle_root = find_eagle_library_root(input_path)
+            if eagle_root and os.path.exists(os.path.join(eagle_root, 'metadata.json')):
+                break
+            print("未能识别为有效的 Eagle 资料库目录，请重新输入或拖入 Eagle 文件：")
     while not os.path.exists(eagle_root):
         print("Error: Directory does not exist! Please re-enter:")
         eagle_root = input().strip()
