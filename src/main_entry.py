@@ -76,12 +76,14 @@ def main():
                 print("="*34)
                 print("    Eagle 专用批量命名模式")
                 print("="*34)
-                eagle_root = input("请输入 Eagle 资料库根目录路径（如 E:/AIGC_Project/订阅图库/Eagle资料库）：\n").strip('"')
+                print("请输入 Eagle 资料库根目录路径，或直接从 Eagle 软件窗口中拖入任意文件/图片后回车：")
+                eagle_root = input().strip('"')
                 if not os.path.exists(eagle_root):
-                    print("错误：目录不存在！")
+                    print("错误：路径不存在！")
                     pause()
                     continue
-                print("请粘贴 Eagle 目录链接（用空格分隔多个链接），然后回车：")
+                print("\n请从 Eagle 软件中复制目录链接（可多选，用空格分隔），然后回车：")
+                print("提示：在 Eagle 中右键点击目录，选择「复制链接」即可获取目录链接")
                 folder_links = input().strip()
                 cmd = [sys.executable, "src/eagle_rename.py", "--root", eagle_root, "--mode", rename_mode]
                 if add_index:
