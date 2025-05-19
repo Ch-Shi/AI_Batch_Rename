@@ -65,6 +65,7 @@ def process_eagle_rename(library_path, target_folder_ids):
     total_images = len(image_folders)
     processed_images = 0
     skipped_images = 0
+    deleted_images = 0
 
     for folder in tqdm(image_folders, desc="Eagle AI重命名"):
         meta_path = os.path.join(folder, 'metadata.json')
@@ -73,6 +74,12 @@ def process_eagle_rename(library_path, target_folder_ids):
             continue
         with open(meta_path, 'r', encoding='utf-8') as f:
             meta = json.load(f)
+        
+        # 检查是否为已删除的图片
+        if meta.get('isDeleted', False):
+            deleted_images += 1
+            continue
+            
         # 判断是否属于目标目录
         folder_ids = set(meta.get('folders', []))
         group_ids = folder_ids & all_target_ids
@@ -117,6 +124,7 @@ def process_eagle_rename(library_path, target_folder_ids):
     print(f"总图片数：{total_images}")
     print(f"已处理：{processed_images}")
     print(f"已跳过：{skipped_images}（不在目标目录中）")
+    print(f"已删除：{deleted_images}（标记为删除的图片）")
     print("\n✓ 批量重命名完成！")
 
 def print_folder_tree(root_ids, eagle_metadata):
