@@ -121,13 +121,19 @@ def print_folder_tree(root_ids, eagle_metadata):
 
 def find_eagle_library_root(path):
     """从任意路径向上查找，直到找到以 .library 结尾的文件夹"""
+    # 移除路径中的引号
+    path = path.strip('"').strip("'")
+    # 转换为绝对路径
     path = os.path.abspath(path)
+    # 如果是文件，先获取其所在目录
+    if os.path.isfile(path):
+        path = os.path.dirname(path)
+    # 向上查找.library目录
     while True:
         if os.path.isdir(path) and path.lower().endswith('.library'):
             return path
         parent = os.path.dirname(path)
-        if parent == path:
-            # 已经到根目录还没找到
+        if parent == path:  # 已经到达根目录
             return None
         path = parent
 
@@ -136,9 +142,10 @@ if __name__ == "__main__":
     eagle_root = args.root
     if not eagle_root:
         while True:
-            input_path = input("请输入 Eagle 资料库根目录路径，或直接拖入任意 Eagle 文件/图片后回车：\n").strip().strip('"')
+            input_path = input("请输入 Eagle 资料库根目录路径，或直接拖入任意 Eagle 文件/图片后回车：\n").strip()
             eagle_root = find_eagle_library_root(input_path)
             if eagle_root and os.path.exists(os.path.join(eagle_root, 'metadata.json')):
+                print(f"已找到 Eagle 资料库：{eagle_root}")
                 break
             print("未能识别为有效的 Eagle 资料库目录，请重新输入或拖入 Eagle 文件：")
     # 目录链接优先从环境变量获取
