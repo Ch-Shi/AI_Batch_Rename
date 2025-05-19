@@ -32,18 +32,25 @@ def get_args():
 def get_all_subfolder_ids(root_ids, eagle_metadata):
     """递归获取所有子目录ID（含自身）"""
     result = set(root_ids)  # 首先添加所有根目录ID
+    
+    def get_all_children(folder):
+        """递归获取文件夹的所有子目录ID"""
+        children_ids = set()
+        if folder.get('children'):
+            for child in folder['children']:
+                children_ids.add(child['id'])
+                children_ids.update(get_all_children(child))
+        return children_ids
+    
     def dfs(folders):
         for folder in folders:
-            # 如果当前目录在目标ID列表中，添加其所有子目录
             if folder['id'] in root_ids:
-                if folder.get('children'):
-                    for child in folder['children']:
-                        result.add(child['id'])
-                        if child.get('children'):
-                            dfs([child])
-            # 继续检查其他目录
-            elif folder.get('children'):
+                # 获取当前目录的所有子目录ID
+                children_ids = get_all_children(folder)
+                result.update(children_ids)
+            if folder.get('children'):
                 dfs(folder['children'])
+    
     dfs(eagle_metadata['folders'])
     return result
 
