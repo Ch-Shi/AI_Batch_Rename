@@ -37,80 +37,110 @@ if errorlevel 1 (
     ollama pull qwen2.5vl:3b
 )
 
-:menu
+:main_menu
 cls
 echo ===================================
 echo        AI Image Batch Rename
+echo ===================================
+echo.
+echo  [1] Normal Batch Rename Mode
+echo  [2] Eagle Library Mode
+echo  [3] Exit
+echo ===================================
+set /p main_choice=Please select mode (1-3): 
+
+if "%main_choice%"=="1" (
+    set mode_type=normal
+    goto mode_menu
+)
+if "%main_choice%"=="2" (
+    set mode_type=eagle
+    goto mode_menu
+)
+if "%main_choice%"=="3" (
+    goto end
+)
+goto main_menu
+
+:mode_menu
+cls
+echo ===================================
+echo        Select Rename Strategy
 echo ===================================
 echo.
 echo  [1] Override Mode
-echo.
 echo      Replace original filename with new name
 echo.
 echo  [2] Prefix Mode
-echo.
 echo      Keep original filename with new name as prefix
 echo.
 echo  [3] Add Index
-echo.
 echo      Add sequential numbers (001-999)
 echo.
-echo  [4] Exit
-echo.
-echo      Close program
-echo.
+echo  [4] Back to Main Menu
 echo ===================================
+set /p mode_choice=Please select rename strategy (1-4): 
 
-set /p choice=Please select operation (1-4): 
-
-if "%choice%"=="1" (
-    set mode=override
-    goto input
+if "%mode_choice%"=="1" (
+    set rename_mode=override
+    set add_index=
 )
-if "%choice%"=="2" (
-    set mode=prefix
-    goto input
+if "%mode_choice%"=="2" (
+    set rename_mode=prefix
+    set add_index=
 )
-if "%choice%"=="3" (
-    set mode=override
+if "%mode_choice%"=="3" (
+    set rename_mode=override
     set add_index=--add_index
-    goto input
 )
-if "%choice%"=="4" (
-    goto end
+if "%mode_choice%"=="4" (
+    goto main_menu
 )
-goto menu
+if not defined rename_mode goto mode_menu
 
-:input
+if "%mode_type%"=="normal" (
+    goto normal_input
+) else (
+    goto eagle_input
+)
+
+:normal_input
 cls
 echo ===================================
-echo        AI Image Batch Rename
+echo        Normal Batch Rename Mode
 echo ===================================
 echo.
-echo Current mode: %mode%
-if defined add_index echo Index mode enabled
-echo.
-echo Please drag and drop image folder here, then press Enter:
+echo Please drag and drop the image folder here, then press Enter:
 set /p folder=
-
 if not exist "%folder%" (
     echo Error: Folder does not exist!
     pause
-    goto menu
+    goto normal_input
 )
-
 echo.
 echo Processing images...
-python src/main.py -i "%folder%" -m %mode% %add_index%
-if errorlevel 1 (
-    echo Error: Processing failed, please check log file!
+python src/main.py -i "%folder%" -m %rename_mode% %add_index%
+pause
+goto main_menu
+
+:eagle_input
+cls
+echo ===================================
+echo        Eagle Library Batch Rename Mode
+echo ===================================
+echo.
+echo Please enter the path to your Eagle library root folder (e.g. E:\AIGC_Project\Library):
+set /p eagle_root=
+if not exist "%eagle_root%" (
+    echo Error: Directory does not exist!
     pause
-    goto menu
+    goto eagle_input
 )
 echo.
-echo Processing completed!
+echo Please paste Eagle folder links (one per line). After pasting all links, press Enter on an empty line to finish:
+python src/eagle_rename.py --root "%eagle_root%" --mode %rename_mode% %add_index%
 pause
-goto menu
+goto main_menu
 
 :end
 echo Closing Ollama service...
