@@ -12,27 +12,28 @@ LOG_FILE = 'rename.log'  # 日志文件路径
 LOG_LEVEL = 'INFO'  # 日志级别: DEBUG/INFO/WARNING/ERROR/CRITICAL
 
 # 提示词配置
-DEFAULT_PROMPT = """Generate a poetic Chinese name for this image.
+DEFAULT_PROMPT = """为这个作品起名 
 
-Requirements:
-1. Return ONLY the name, no explanations or descriptions
-2. The name should be poetic and express the mood/atmosphere
-3. Use clean, elegant words
-4. No punctuation marks
-5. Maximum 6 Chinese characters
+命名风格统一要求：
+1. 文字简洁（不超过六个字）
+2. 富有诗意，表达画面意境而非具象描述
+3. 避免夸张、华丽词汇，使用干净、素雅、意象化的词语
+4. 不带有任何符号
+具体规则（以下内容仅作参考）：
+- 可从图像中提取一个或多个意象元素进行命名：
+  • 主体意象：画面最显著的物体或元素（如：晶石、云门、镜境、水月）  
+  • 次要意象：陪衬或烘托主体的元素（如：溪、境、湖、门、镜、石、花）  
+  • 色彩氛围：画面的整体色调和感觉（如：云、霞、晨、暮、春、秋）  
+  • 场景类型：整体意境或感受（如：梦、境、之境、之溪、之门、之湖）
 
-Naming elements:
-- Main elements: crystal, cloud gate, mirror realm, water moon
-- Secondary elements: stream, realm, lake, gate, mirror, stone, flower
-- Color/mood: cloud, sunset, dawn, dusk, spring, autumn
-- Scene types: dream, realm, stream, gate, lake
+命名结构组合：
+- 【主体意象 + 场景类型】  
+  示例：晶之溪、云门之境、水月镜境  
+- 或使用单一主体意象：  
+  示例：云门、晶溪、水镜  
 
-Example names:
-- Crystal Stream (晶溪)
-- Cloud Gate (云门)
-- Water Moon Mirror (水月镜)
-
-Return ONLY the Chinese name, nothing else."""
+请依据以上风格与参考，为每幅图像生成不超过六个字的极简诗意名称。  
+"""
 
 # 图像处理设置
 MAX_IMAGE_SIZE = 512  # 图像最长边像素尺寸上限
