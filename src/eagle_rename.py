@@ -104,14 +104,19 @@ def process_eagle_rename(library_path, target_folder_ids):
         if not os.path.exists(meta_path):
             skipped_images += 1
             continue
-        with open(meta_path, 'r', encoding='utf-8') as f:
-            meta = json.load(f)
-        
+        try:
+            with open(meta_path, 'r', encoding='utf-8') as f:
+                meta = json.load(f)
+        except Exception as e:
+            print(Fore.RED + f"[ERROR] 读取元数据失败: {folder} | {e}")
+            with open('ai_failures.log', 'a', encoding='utf-8') as logf:
+                logf.write(f"[读取元数据失败] {folder} | {e}\n")
+            skipped_images += 1
+            continue
         # 检查是否为已删除的图片
         if meta.get('isDeleted', False):
             deleted_images += 1
             continue
-            
         # 判断是否属于目标目录
         folder_ids = set(meta.get('folders', []))
         group_ids = folder_ids & all_target_ids
@@ -135,6 +140,8 @@ def process_eagle_rename(library_path, target_folder_ids):
                 suggestion = ai_client.analyze_image(main_img)['description']
             except Exception as e:
                 print(Fore.RED + f"[ERROR] 图像分析失败: {e}")
+                with open('ai_failures.log', 'a', encoding='utf-8') as logf:
+                    logf.write(f"[AI分析失败] {folder} | {main_img} | {e}\n")
                 skipped_images += 1
                 suggestion = None
                 break
@@ -153,16 +160,36 @@ def process_eagle_rename(library_path, target_folder_ids):
         group_used_names[group_id].add(new_name)
         # 修改metadata.json
         meta['name'] = new_name
-        with open(meta_path, 'w', encoding='utf-8') as f:
-            json.dump(meta, f, ensure_ascii=False, indent=2)
+        try:
+            with open(meta_path, 'w', encoding='utf-8') as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(Fore.RED + f"[ERROR] 写入元数据失败: {meta_path} | {e}")
+            with open('ai_failures.log', 'a', encoding='utf-8') as logf:
+                logf.write(f"[写入元数据失败] {meta_path} | {e}\n")
+            skipped_images += 1
+            continue
         # 重命名主图像
         new_main_img = os.path.join(folder, f"{new_name}.{ext}")
-        if os.path.exists(main_img):
-            os.rename(main_img, new_main_img)
+        try:
+            if os.path.exists(main_img):
+                os.rename(main_img, new_main_img)
+        except Exception as e:
+            print(Fore.RED + f"[ERROR] 主图像重命名失败: {main_img} -> {new_main_img} | {e}")
+            with open('ai_failures.log', 'a', encoding='utf-8') as logf:
+                logf.write(f"[主图像重命名失败] {main_img} -> {new_main_img} | {e}\n")
+            skipped_images += 1
+            continue
         # 重命名缩略图
-        if os.path.exists(thumb_img):
-            new_thumb_img = os.path.join(folder, f"{new_name}_thumbnail.{ext}")
-            os.rename(thumb_img, new_thumb_img)
+        try:
+            if os.path.exists(thumb_img):
+                new_thumb_img = os.path.join(folder, f"{new_name}_thumbnail.{ext}")
+                os.rename(thumb_img, new_thumb_img)
+        except Exception as e:
+            print(Fore.RED + f"[ERROR] 缩略图重命名失败: {thumb_img} -> {new_thumb_img} | {e}")
+            with open('ai_failures.log', 'a', encoding='utf-8') as logf:
+                logf.write(f"[缩略图重命名失败] {thumb_img} -> {new_thumb_img} | {e}\n")
+            # 不计入 skipped_images，主图已成功可忽略
         processed_images += 1
 
     # 打印处理结果统计
