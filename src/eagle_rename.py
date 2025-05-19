@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import argparse
 from collections import defaultdict
 from core.ai_client import AIClient
 from config import USE_OLLAMA, MAX_RETRIES
@@ -20,6 +21,13 @@ def parse_folder_links(links):
             if m2:
                 ids.append(m2.group(1))
     return ids
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root', type=str, help='Eagle library root folder')
+    parser.add_argument('--mode', type=str, default='override', help='rename mode')
+    parser.add_argument('--add_index', action='store_true', help='add index')
+    return parser.parse_args()
 
 def get_all_subfolder_ids(root_ids, eagle_metadata):
     """递归获取所有子目录ID（含自身）"""
@@ -98,13 +106,18 @@ def process_eagle_rename(library_path, target_folder_ids):
         # 可选：日志输出
 
 if __name__ == "__main__":
-    print("Please enter the path to your Eagle library root folder (e.g. E:/AIGC_Project/Library):")
-    eagle_root = input().strip()
+    args = get_args()
+    eagle_root = args.root
+    if not eagle_root:
+        eagle_root = input("Please enter the path to your Eagle library root folder (e.g. E:/AIGC_Project/Library):\n").strip()
     while not os.path.exists(eagle_root):
         print("Error: Directory does not exist! Please re-enter:")
         eagle_root = input().strip()
-    print("Please paste Eagle folder links here, separated by space. Then press Enter:")
-    folder_links = input().strip()
+    # 目录链接优先从环境变量获取
+    folder_links = os.environ.get("EAGLE_FOLDER_LINKS")
+    if not folder_links:
+        print("Please paste Eagle folder links here, separated by space. Then press Enter:")
+        folder_links = input().strip()
     target_folder_ids = parse_folder_links(folder_links)
     process_eagle_rename(eagle_root, target_folder_ids)
     print("Batch renaming completed!") 
