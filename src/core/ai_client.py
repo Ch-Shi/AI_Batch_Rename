@@ -7,7 +7,8 @@ from config import (
     USE_OLLAMA, OLLAMA_BASE_URL, OLLAMA_MODEL,
     SILICON_FLOW_API_KEY, SILICON_FLOW_API_URL, SILICON_FLOW_MODEL,
     MAX_RETRIES, INITIAL_RETRY_DELAY, MAX_RETRY_DELAY,
-    MAX_OUTPUT_TOKENS, DEFAULT_PROMPT
+    MAX_OUTPUT_TOKENS, DEFAULT_PROMPT, SYSTEM_MESSAGE,
+    TEMPERATURE, TOP_P, REPETITION_PENALTY
 )
 from utils.logger import logger
 from token_monitor import token_monitor
@@ -44,21 +45,23 @@ class AIClient:
                 base64_image = base64.b64encode(image_data).decode('utf-8')
             
             # 构建请求
-            url = self.ollama_base_url  # 直接使用配置的 URL，不再添加 /api/generate
+            url = self.ollama_base_url
             headers = {
                 "Content-Type": "application/json"
             }
             
-            # 构建提示词
-            prompt = "请分析这张图片的内容，并用简短的中文描述它。描述应该简洁明了，适合作为文件名。"
-            
             # 构建请求体
             payload = {
                 "model": OLLAMA_MODEL,
-                "prompt": prompt,
+                "prompt": DEFAULT_PROMPT,
+                "system": SYSTEM_MESSAGE,
                 "images": [base64_image],
                 "stream": False,
-                "num_predict": MAX_OUTPUT_TOKENS  # 限制输出 token 数量
+                "options": {
+                    "temperature": TEMPERATURE,
+                    "top_p": TOP_P,
+                    "repeat_penalty": REPETITION_PENALTY
+                }
             }
             
             # 发送请求
