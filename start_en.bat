@@ -1,74 +1,67 @@
 @echo off
-rem 检查并设置正确的代码页
 chcp 65001 >nul
-if errorlevel 1 (
-    echo 错误：无法设置 UTF-8 编码，请确保系统支持 UTF-8！
-    pause
-    exit /b 1
-)
+title AI Image Batch Rename Tool
 
-title 图像智能重命名工具
-
-echo 正在检查 Python 环境...
+echo Checking Python environment...
 python --version 2>nul | findstr /r "^Python 3" >nul
 if errorlevel 1 (
-    echo 错误：未检测到 Python 3，请安装 Python 3 或更高版本！
+    echo Error: Python 3 not found. Please install Python 3 or higher version!
     pause
     exit /b 1
 )
 
-echo 正在检查依赖包...
+echo Checking dependencies...
 python -c "import requests" >nul 2>&1
 if errorlevel 1 (
-    echo 正在安装依赖包...
+    echo Installing dependencies...
     pip install -r requirements.txt
     if errorlevel 1 (
-        echo 错误：依赖包安装失败！
+        echo Error: Failed to install dependencies!
         pause
         exit /b 1
     )
 )
 
-echo 正在检查 Ollama 服务...
+echo Checking Ollama service...
 tasklist /FI "IMAGENAME eq ollama.exe" 2>NUL | find /I /N "ollama.exe">NUL
 if "%ERRORLEVEL%"=="1" (
-    echo 正在启动 Ollama 服务...
+    echo Starting Ollama service...
     start /B ollama serve
     timeout /t 5 /nobreak
 )
 
-echo 正在检查模型...
+echo Checking model...
 ollama list | findstr "qwen2.5vl:3b" >nul
 if errorlevel 1 (
-    echo 正在下载 qwen2.5vl:3b 模型...
+    echo Downloading qwen2.5vl:3b model...
     ollama pull qwen2.5vl:3b
 )
 
 :menu
 cls
 echo ===================================
-echo        图像智能重命名工具
+echo        AI Image Batch Rename
 echo ===================================
 echo.
-echo  [1] 覆盖模式
+echo  [1] Override Mode
 echo.
-echo      直接使用新名称替换原文件名
+echo      Replace original filename with new name
 echo.
-echo  [2] 前缀模式
+echo  [2] Prefix Mode
 echo.
-echo      保留原文件名，添加新名称
+echo      Keep original filename with new name as prefix
 echo.
-echo  [3] 添加序号
+echo  [3] Add Index
 echo.
-echo      新名称后添加序号(001-999)
+echo      Add sequential numbers (001-999)
 echo.
-echo  [4] 退出
+echo  [4] Exit
 echo.
-echo      关闭程序
+echo      Close program
 echo.
 echo ===================================
 
-set /p choice=请选择操作 (1-4): 
+set /p choice=Please select operation (1-4): 
 
 if "%choice%"=="1" (
     set mode=override
@@ -91,35 +84,35 @@ goto menu
 :input
 cls
 echo ===================================
-echo        图像智能重命名工具
+echo        AI Image Batch Rename
 echo ===================================
 echo.
-echo 当前模式: %mode%
-if defined add_index echo 已启用序号添加
+echo Current mode: %mode%
+if defined add_index echo Index mode enabled
 echo.
-echo 请将图片文件夹拖放到此处，然后按回车：
+echo Please drag and drop image folder here, then press Enter:
 set /p folder=
 
 if not exist "%folder%" (
-    echo 错误：文件夹不存在！
+    echo Error: Folder does not exist!
     pause
     goto menu
 )
 
 echo.
-echo 正在处理图片...
+echo Processing images...
 python src/main.py -i "%folder%" -m %mode% %add_index%
 if errorlevel 1 (
-    echo 错误：处理失败，请检查日志文件！
+    echo Error: Processing failed, please check log file!
     pause
     goto menu
 )
 echo.
-echo 处理完成！
+echo Processing completed!
 pause
 goto menu
 
 :end
-echo 正在关闭 Ollama 服务...
+echo Closing Ollama service...
 taskkill /F /IM ollama.exe >nul 2>&1
 exit 
