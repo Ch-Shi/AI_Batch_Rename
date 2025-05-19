@@ -125,34 +125,27 @@ def find_eagle_library_root(path):
     path = path.strip('"').strip("'")
     # 转换为绝对路径
     path = os.path.abspath(path)
-    print(f"开始查找 Eagle 资料库，初始路径: {path}")
     
     # 如果是文件，先获取其所在目录
     if os.path.isfile(path):
         path = os.path.dirname(path)
-        print(f"是文件，获取所在目录: {path}")
     
     # 如果是.info目录，继续向上查找
     if path.endswith('.info'):
         path = os.path.dirname(path)
-        print(f"是.info目录，向上查找: {path}")
     
     # 如果是images目录，继续向上查找
     if os.path.basename(path) == 'images':
         path = os.path.dirname(path)
-        print(f"是images目录，向上查找: {path}")
     
     # 向上查找.library目录
     while True:
         if os.path.isdir(path) and path.lower().endswith('.library'):
-            print(f"找到 Eagle 资料库目录: {path}")
             return path
         parent = os.path.dirname(path)
         if parent == path:  # 已经到达根目录
-            print("未找到 Eagle 资料库目录")
             return None
         path = parent
-        print(f"继续向上查找: {path}")
 
 if __name__ == "__main__":
     args = get_args()
@@ -162,9 +155,9 @@ if __name__ == "__main__":
             input_path = input("请输入 Eagle 资料库根目录路径，或直接拖入任意 Eagle 文件/图片后回车：\n").strip()
             eagle_root = find_eagle_library_root(input_path)
             if eagle_root and os.path.exists(os.path.join(eagle_root, 'metadata.json')):
-                print(f"已找到 Eagle 资料库：{eagle_root}")
+                print(f"\n✓ 已找到 Eagle 资料库：{os.path.basename(eagle_root)}")
                 break
-            print("未能识别为有效的 Eagle 资料库目录，请重新输入或拖入 Eagle 文件：")
+            print("✗ 未能识别为有效的 Eagle 资料库目录，请重新输入或拖入 Eagle 文件：")
     
     # 确保 eagle_root 是目录而不是文件
     if os.path.isfile(eagle_root):
@@ -174,21 +167,20 @@ if __name__ == "__main__":
     if not eagle_root.lower().endswith('.library'):
         eagle_root = find_eagle_library_root(eagle_root)
         if not eagle_root:
-            print("错误：无法找到有效的 Eagle 资料库目录")
+            print("✗ 错误：无法找到有效的 Eagle 资料库目录")
             exit(1)
     
     # 目录链接优先从环境变量获取
     folder_links = os.environ.get("EAGLE_FOLDER_LINKS")
     if not folder_links:
-        print("请粘贴 Eagle 目录链接（用空格分隔多个链接），然后回车：")
+        print("\n请粘贴 Eagle 目录链接（用空格分隔多个链接），然后回车：")
         folder_links = input().strip()
     target_folder_ids = parse_folder_links(folder_links)
     
     # 打印目录树供用户确认
-    metadata_path = os.path.join(eagle_root, 'metadata.json')
-    print(f"正在读取 metadata.json: {metadata_path}")
-    with open(metadata_path, 'r', encoding='utf-8') as f:
+    print("\n将处理以下目录（及其子目录）：")
+    with open(os.path.join(eagle_root, 'metadata.json'), 'r', encoding='utf-8') as f:
         eagle_metadata = json.load(f)
     print_folder_tree(target_folder_ids, eagle_metadata)
     process_eagle_rename(eagle_root, target_folder_ids)
-    print("批量重命名完成！") 
+    print("\n✓ 批量重命名完成！") 
