@@ -1,5 +1,55 @@
 import os
 import re
+import logging
+from datetime import datetime
+from config import MAX_RETRIES
+from utils.logger import logger
+
+# 设置重名日志记录器
+duplicate_logger = logging.getLogger('duplicate_names')
+duplicate_logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('duplicate_names.log', encoding='utf-8')
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+duplicate_logger.addHandler(file_handler)
+
+class NameManager:
+    def __init__(self):
+        self.used_names = set()
+        self.duplicate_count = 0
+        self.duplicate_files = []
+
+    def add_name(self, name):
+        """添加已使用的名称"""
+        self.used_names.add(name)
+
+    def is_duplicate(self, name):
+        """检查名称是否重复"""
+        return name in self.used_names
+
+    def record_duplicate(self, original_path, final_name):
+        """记录重名情况"""
+        self.duplicate_count += 1
+        self.duplicate_files.append({
+            'original': os.path.basename(original_path),
+            'final': final_name
+        })
+        duplicate_logger.info(
+            f"重名处理: {os.path.basename(original_path)} -> {final_name}"
+        )
+
+    def print_summary(self):
+        """打印重名统计信息"""
+        if self.duplicate_count > 0:
+            print("\n重名处理统计:")
+            print(f"总重名文件数: {self.duplicate_count}")
+            print("\n重名文件列表:")
+            for file in self.duplicate_files:
+                print(f"原文件名: {file['original']}")
+                print(f"最终名称: {file['final']}")
+                print("-" * 30)
+
+# 创建全局名称管理器实例
+name_manager = NameManager()
 
 def clean_filename(filename):
     """
@@ -42,12 +92,25 @@ def generate_new_name(original_path, suggestion, strategy="override", add_index=
     if add_index and index is not None:
         # 在末尾添加零填充的序号（默认3位，可以根据需要调整位数）
         base_name = f"{base_name}{str(index).zfill(3)}"
-    # 检测命名冲突：若目标文件名已存在，则添加递增数字后缀避免冲突
+    # 处理重名情况
     new_base = base_name
     counter = 1
-    while os.path.exists(os.path.join(dir_name, new_base + ext)):
-        new_base = f"{base_name}_{counter}"
-        counter += 1
+    retry_count = 0
+    
+    while os.path.exists(os.path.join(dir_name, new_base + ext)) or name_manager.is_duplicate(new_base):
+        if retry_count < MAX_RETRIES:
+            # 记录重名情况
+            name_manager.record_duplicate(original_path, new_base)
+            # 返回 None 表示需要重新生成名称
+            return None
+        else:
+            # 超过重试次数，添加序号
+            new_base = f"{base_name}_{counter}"
+            counter += 1
+    
+    # 添加新名称到已使用集合
+    name_manager.add_name(new_base)
+    
     # 最终的新文件名（含扩展名）
     new_name = new_base + ext
     return os.path.join(dir_name, new_name)

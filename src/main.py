@@ -7,13 +7,14 @@ from tqdm import tqdm
 from config import (
     DEFAULT_MODE, ADD_INDEX, ALLOWED_EXTENSIONS,
     IMAGE_PROCESS_DELAY, TOKEN_WARNING_THRESHOLD,
-    USE_OLLAMA
+    USE_OLLAMA, MAX_RETRIES
 )
 from core.image_utils import compress_image_to_base64
 from core.ai_client import AIClient
 from core.naming import generate_new_name
 from utils.logger import logger
 from token_monitor import token_monitor
+from utils.name_manager import NameManager
 
 def get_image_files(directory):
     """获取目录下所有支持的图片文件"""
@@ -42,12 +43,30 @@ def process_image(image_path, ai_client, mode, add_index, index=None):
         result = ai_client.analyze_image(image_path)
         suggestion = result["description"]
         
-        # 根据策略生成新的文件名
-        new_path = generate_new_name(
-            image_path, suggestion,
-            strategy=mode, add_index=add_index,
-            index=index
-        )
+        # 处理重名情况
+        retry_count = 0
+        new_path = None
+        while new_path is None and retry_count < MAX_RETRIES:
+            # 根据策略生成新的文件名
+            new_path = generate_new_name(
+                image_path, suggestion,
+                strategy=mode, add_index=add_index,
+                index=index
+            )
+            if new_path is None:
+                # 需要重新生成名称
+                retry_count += 1
+                if retry_count < MAX_RETRIES:
+                    print(f"检测到重名，正在重新生成名称... (尝试 {retry_count}/{MAX_RETRIES})")
+                    result = ai_client.analyze_image(image_path)
+                    suggestion = result["description"]
+                else:
+                    # 最后一次尝试，使用带序号的名字
+                    new_path = generate_new_name(
+                        image_path, suggestion,
+                        strategy=mode, add_index=add_index,
+                        index=index
+                    )
         
         # 重命名文件
         os.rename(image_path, new_path)
@@ -115,13 +134,12 @@ def main():
             })
             
             time.sleep(IMAGE_PROCESS_DELAY)
-
-    # 输出统计信息
-    print(f"\n处理完成！")
-    print(f"成功: {success_count} 个文件")
-    print(f"失败: {fail_count} 个文件")
-    if fail_count > 0:
-        print("\n请查看 rename.log 文件了解详细错误信息")
+    
+    # 打印重名统计信息
+    name_manager = NameManager()
+    name_manager.print_summary()
+    
+    print(f"\n处理完成！成功: {success_count}, 失败: {fail_count}")
 
 if __name__ == "__main__":
     main()
