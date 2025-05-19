@@ -1,60 +1,60 @@
 @echo off
-rem æ£€æŸ¥å¹¶è®¾ç½®æ­£ç¡®çš„ä»£ç é¡µ
+rem ¼ì²é²¢ÉèÖÃÕıÈ·µÄ´úÂëÒ³
 chcp 65001 >nul
 if errorlevel 1 (
-    echo é”™è¯¯ï¼šæ— æ³•è®¾ç½® UTF-8 ç¼–ç ï¼Œè¯·ç¡®ä¿ç³»ç»Ÿæ”¯æŒ UTF-8ï¼
+    echo ´íÎó£ºÎŞ·¨ÉèÖÃ UTF-8 ±àÂë£¬ÇëÈ·±£ÏµÍ³Ö§³Ö UTF-8£¡
     pause
     exit /b 1
 )
 
-title å›¾åƒæ™ºèƒ½æ‰¹é‡é‡å‘½åå·¥å…·
+title Í¼ÏñÖÇÄÜÅúÁ¿ÖØÃüÃû¹¤¾ß
 
-echo æ­£åœ¨æ£€æŸ¥ Python ç¯å¢ƒ...
+echo ÕıÔÚ¼ì²é Python »·¾³...
 python --version 2>nul | findstr /r "^Python 3" >nul
 if errorlevel 1 (
-    echo é”™è¯¯ï¼šæœªæ£€æµ‹åˆ° Python 3ï¼Œè¯·å®‰è£… Python 3 æˆ–æ›´é«˜ç‰ˆæœ¬ï¼
+    echo ´íÎó£ºÎ´¼ì²âµ½ Python 3£¬Çë°²×° Python 3 »ò¸ü¸ß°æ±¾£¡
     pause
     exit /b 1
 )
 
-echo æ­£åœ¨æ£€æŸ¥ä¾èµ–åŒ…...
+echo ÕıÔÚ¼ì²éÒÀÀµ°ü...
 python -c "import requests" >nul 2>&1
 if errorlevel 1 (
-    echo æ­£åœ¨å®‰è£…ä¾èµ–åŒ…...
+    echo ÕıÔÚ°²×°ÒÀÀµ°ü...
     pip install -r requirements.txt
     if errorlevel 1 (
-        echo é”™è¯¯ï¼šä¾èµ–åŒ…å®‰è£…å¤±è´¥ï¼
+        echo ´íÎó£ºÒÀÀµ°ü°²×°Ê§°Ü£¡
         pause
         exit /b 1
     )
 )
 
-echo æ­£åœ¨æ£€æŸ¥ Ollama æœåŠ¡...
+echo ÕıÔÚ¼ì²é Ollama ·şÎñ...
 tasklist /FI "IMAGENAME eq ollama.exe" 2>NUL | find /I /N "ollama.exe">NUL
 if "%ERRORLEVEL%"=="1" (
-    echo æ­£åœ¨å¯åŠ¨ Ollama æœåŠ¡...
+    echo ÕıÔÚÆô¶¯ Ollama ·şÎñ...
     start /B ollama serve
     timeout /t 5 /nobreak
 )
 
-echo æ­£åœ¨æ£€æŸ¥æ¨¡å‹...
+echo ÕıÔÚ¼ì²éÄ£ĞÍ...
 ollama list | findstr "qwen2.5vl:3b" >nul
 if errorlevel 1 (
-    echo æ­£åœ¨ä¸‹è½½ qwen2.5vl:3b æ¨¡å‹...
+    echo ÕıÔÚÏÂÔØ qwen2.5vl:3b Ä£ĞÍ...
     ollama pull qwen2.5vl:3b
 )
 
 :main_menu
 cls
 echo ===================================
-echo        å›¾åƒæ™ºèƒ½æ‰¹é‡é‡å‘½å
+echo        Í¼ÏñÖÇÄÜÅúÁ¿ÖØÃüÃû
 echo ===================================
 echo.
-echo  [1] æ™®é€šæ‰¹é‡å‘½åæ¨¡å¼
-echo  [2] Eagle ä¸“ç”¨æ¨¡å¼
-echo  [3] é€€å‡º
+echo  [1] ÆÕÍ¨ÅúÁ¿ÃüÃûÄ£Ê½
+echo  [2] Eagle ×¨ÓÃÄ£Ê½
+echo  [3] ÍË³ö
 echo ===================================
-set /p main_choice=è¯·é€‰æ‹©ä¸»æ¨¡å¼ (1-3): 
+set /p main_choice=ÇëÑ¡ÔñÖ÷Ä£Ê½ (1-3): 
 
 if "%main_choice%"=="1" (
     set mode_type=normal
@@ -72,21 +72,21 @@ goto main_menu
 :mode_menu
 cls
 echo ===================================
-echo        é€‰æ‹©å‘½åæ–¹å¼
+echo        Ñ¡ÔñÃüÃû·½Ê½
 echo ===================================
 echo.
-echo  [1] è¦†ç›–æ¨¡å¼ï¼ˆOverrideï¼‰
-echo      ç”¨æ–°åç§°æ›¿æ¢åŸæ–‡ä»¶å
+echo  [1] ¸²¸ÇÄ£Ê½£¨Override£©
+echo      ÓÃĞÂÃû³ÆÌæ»»Ô­ÎÄ¼şÃû
 echo.
-echo  [2] å‰ç¼€æ¨¡å¼ï¼ˆPrefixï¼‰
-echo      æ–°åç§°ä½œä¸ºå‰ç¼€ä¿ç•™åŸæ–‡ä»¶å
+echo  [2] Ç°×ºÄ£Ê½£¨Prefix£©
+echo      ĞÂÃû³Æ×÷ÎªÇ°×º±£ÁôÔ­ÎÄ¼şÃû
 echo.
-echo  [3] æ·»åŠ åºå·ï¼ˆAdd Indexï¼‰
-echo      æ·»åŠ åºå·ï¼ˆ001-999ï¼‰
+echo  [3] Ìí¼ÓĞòºÅ£¨Add Index£©
+echo      Ìí¼ÓĞòºÅ£¨001-999£©
 echo.
-echo  [4] è¿”å›ä¸»èœå•
+echo  [4] ·µ»ØÖ÷²Ëµ¥
 echo ===================================
-set /p mode_choice=è¯·é€‰æ‹©å‘½åæ–¹å¼ (1-4): 
+set /p mode_choice=ÇëÑ¡ÔñÃüÃû·½Ê½ (1-4): 
 
 if "%mode_choice%"=="1" (
     set rename_mode=override
@@ -114,21 +114,21 @@ if "%mode_type%"=="normal" (
 :normal_input
 cls
 echo ===================================
-echo        æ™®é€šæ‰¹é‡å‘½åæ¨¡å¼
+echo        ÆÕÍ¨ÅúÁ¿ÃüÃûÄ£Ê½
 echo ===================================
 echo.
-echo è¯·æ‹–å…¥å›¾ç‰‡æ–‡ä»¶å¤¹è·¯å¾„ï¼Œç„¶åå›è½¦ï¼š
+echo ÇëÍÏÈëÍ¼Æ¬ÎÄ¼ş¼ĞÂ·¾¶£¬È»ºó»Ø³µ£º
 set /p folder=
 if not exist "%folder%" (
-    echo é”™è¯¯ï¼šæ–‡ä»¶å¤¹ä¸å­˜åœ¨ï¼
+    echo ´íÎó£ºÎÄ¼ş¼Ğ²»´æÔÚ£¡
     pause
     goto normal_input
 )
 echo.
-echo æ­£åœ¨å¤„ç†å›¾ç‰‡...
+echo ÕıÔÚ´¦ÀíÍ¼Æ¬...
 python src/main.py -i "%folder%" -m %rename_mode% %add_index%
 if errorlevel 1 (
-    echo é”™è¯¯ï¼šå¤„ç†å¤±è´¥ï¼Œè¯·æ£€æŸ¥æ—¥å¿—æ–‡ä»¶ï¼
+    echo ´íÎó£º´¦ÀíÊ§°Ü£¬Çë¼ì²éÈÕÖ¾ÎÄ¼ş£¡
     pause
 )
 pause
@@ -137,28 +137,28 @@ goto main_menu
 :eagle_input
 cls
 echo ===================================
-echo        Eagle ä¸“ç”¨æ‰¹é‡å‘½åæ¨¡å¼
+echo        Eagle ×¨ÓÃÅúÁ¿ÃüÃûÄ£Ê½
 echo ===================================
 echo.
-echo è¯·è¾“å…¥ Eagle èµ„æ–™åº“æ ¹ç›®å½•è·¯å¾„ï¼ˆå¦‚ E:\AIGC_Project\è®¢é˜…å›¾åº“\Eagleèµ„æ–™åº“ï¼‰ï¼š
+echo ÇëÊäÈë Eagle ×ÊÁÏ¿â¸ùÄ¿Â¼Â·¾¶£¨Èç E:\AIGC_Project\¶©ÔÄÍ¼¿â\Eagle×ÊÁÏ¿â£©£º
 set /p eagle_root=
 if not exist "%eagle_root%" (
-    echo é”™è¯¯ï¼šç›®å½•ä¸å­˜åœ¨ï¼
+    echo ´íÎó£ºÄ¿Â¼²»´æÔÚ£¡
     pause
     goto eagle_input
 )
 echo.
-echo è¯·ç²˜è´´ Eagle ç›®å½•é“¾æ¥ï¼ˆç”¨ç©ºæ ¼åˆ†éš”å¤šä¸ªé“¾æ¥ï¼‰ï¼Œç„¶åå›è½¦ï¼š
+echo ÇëÕ³Ìù Eagle Ä¿Â¼Á´½Ó£¨ÓÃ¿Õ¸ñ·Ö¸ô¶à¸öÁ´½Ó£©£¬È»ºó»Ø³µ£º
 python src/eagle_rename.py --root "%eagle_root%" --mode %rename_mode% %add_index%
 if errorlevel 1 (
-    echo é”™è¯¯ï¼šEagle æ‰¹é‡é‡å‘½åå¤±è´¥ï¼Œè¯·æ£€æŸ¥æ—¥å¿—ï¼
+    echo ´íÎó£ºEagle ÅúÁ¿ÖØÃüÃûÊ§°Ü£¬Çë¼ì²éÈÕÖ¾£¡
     pause
 )
 pause
 goto main_menu
 
 :end
-echo æ­£åœ¨å…³é—­ Ollama æœåŠ¡...
+echo ÕıÔÚ¹Ø±Õ Ollama ·şÎñ...
 taskkill /F /IM ollama.exe >nul 2>&1
 pause
 exit 
