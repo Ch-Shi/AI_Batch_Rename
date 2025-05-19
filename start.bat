@@ -7,7 +7,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-title 图像智能重命名工具
+title 图像智能批量重命名工具
 
 echo 正在检查 Python 环境...
 python --version 2>nul | findstr /r "^Python 3" >nul
@@ -44,80 +44,110 @@ if errorlevel 1 (
     ollama pull qwen2.5vl:3b
 )
 
-:menu
+:main_menu
 cls
 echo ===================================
-echo        图像智能重命名工具
+echo        图像智能批量重命名
 echo ===================================
 echo.
-echo  [1] 覆盖模式
-echo.
-echo      直接使用新名称替换原文件名
-echo.
-echo  [2] 前缀模式
-echo.
-echo      保留原文件名，添加新名称
-echo.
-echo  [3] 添加序号
-echo.
-echo      新名称后添加序号(001-999)
-echo.
-echo  [4] 退出
-echo.
-echo      关闭程序
-echo.
+echo  [1] 普通批量命名模式
+echo  [2] Eagle 专用模式
+echo  [3] 退出
 echo ===================================
+set /p main_choice=请选择主模式 (1-3): 
 
-set /p choice=请选择操作 (1-4): 
-
-if "%choice%"=="1" (
-    set mode=override
-    goto input
+if "%main_choice%"=="1" (
+    set mode_type=normal
+    goto mode_menu
 )
-if "%choice%"=="2" (
-    set mode=prefix
-    goto input
+if "%main_choice%"=="2" (
+    set mode_type=eagle
+    goto mode_menu
 )
-if "%choice%"=="3" (
-    set mode=override
-    set add_index=--add_index
-    goto input
-)
-if "%choice%"=="4" (
+if "%main_choice%"=="3" (
     goto end
 )
-goto menu
+goto main_menu
 
-:input
+:mode_menu
 cls
 echo ===================================
-echo        图像智能重命名工具
+echo        选择命名方式
 echo ===================================
 echo.
-echo 当前模式: %mode%
-if defined add_index echo 已启用序号添加
+echo  [1] 覆盖模式（Override）
+echo      用新名称替换原文件名
 echo.
-echo 请将图片文件夹拖放到此处，然后按回车：
-set /p folder=
+echo  [2] 前缀模式（Prefix）
+echo      新名称作为前缀保留原文件名
+echo.
+echo  [3] 添加序号（Add Index）
+echo      添加序号（001-999）
+echo.
+echo  [4] 返回主菜单
+echo ===================================
+set /p mode_choice=请选择命名方式 (1-4): 
 
+if "%mode_choice%"=="1" (
+    set rename_mode=override
+    set add_index=
+)
+if "%mode_choice%"=="2" (
+    set rename_mode=prefix
+    set add_index=
+)
+if "%mode_choice%"=="3" (
+    set rename_mode=override
+    set add_index=--add_index
+)
+if "%mode_choice%"=="4" (
+    goto main_menu
+)
+if not defined rename_mode goto mode_menu
+
+if "%mode_type%"=="normal" (
+    goto normal_input
+) else (
+    goto eagle_input
+)
+
+:normal_input
+cls
+echo ===================================
+echo        普通批量命名模式
+echo ===================================
+echo.
+echo 请拖入图片文件夹路径，然后回车：
+set /p folder=
 if not exist "%folder%" (
     echo 错误：文件夹不存在！
     pause
-    goto menu
+    goto normal_input
 )
-
 echo.
 echo 正在处理图片...
-python src/main.py -i "%folder%" -m %mode% %add_index%
-if errorlevel 1 (
-    echo 错误：处理失败，请检查日志文件！
+python src/main.py -i "%folder%" -m %rename_mode% %add_index%
+pause
+goto main_menu
+
+:eagle_input
+cls
+echo ===================================
+echo        Eagle 专用批量命名模式
+echo ===================================
+echo.
+echo 请输入 Eagle 资料库根目录路径（如 E:\AIGC_Project\订阅图库\Eagle资料库）：
+set /p eagle_root=
+if not exist "%eagle_root%" (
+    echo 错误：目录不存在！
     pause
-    goto menu
+    goto eagle_input
 )
 echo.
-echo 处理完成！
+echo 请粘贴 Eagle 目录链接（用空格分隔多个链接），然后回车：
+python src/eagle_rename.py --root "%eagle_root%" --mode %rename_mode% %add_index%
 pause
-goto menu
+goto main_menu
 
 :end
 echo 正在关闭 Ollama 服务...
