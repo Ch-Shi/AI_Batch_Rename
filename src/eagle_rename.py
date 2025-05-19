@@ -7,12 +7,18 @@ from config import USE_OLLAMA, MAX_RETRIES
 from tqdm import tqdm
 
 def parse_folder_links(links):
-    """解析用户输入，提取所有 eagle://folder/xxxxxx 目录ID"""
+    """解析用户输入，提取所有 eagle://folder/xxxxxx 目录ID，支持空格分隔"""
     ids = []
-    for line in links.splitlines():
-        m = re.search(r'eagle://folder/([A-Z0-9]+)', line)
+    # 按空格分割每个链接
+    for token in links.strip().split():
+        m = re.search(r'eagle://folder/([A-Z0-9]+)', token)
         if m:
             ids.append(m.group(1))
+        else:
+            # 兼容 http://localhost:41595/folder?id=XXXX 这种格式
+            m2 = re.search(r'folder\?id=([A-Z0-9]+)', token)
+            if m2:
+                ids.append(m2.group(1))
     return ids
 
 def get_all_subfolder_ids(root_ids, eagle_metadata):
@@ -92,18 +98,13 @@ def process_eagle_rename(library_path, target_folder_ids):
         # 可选：日志输出
 
 if __name__ == "__main__":
-    print("请在Eagle中复制目录链接（可多行），粘贴后回车结束：")
-    lines = []
-    while True:
-        try:
-            line = input()
-            if not line.strip():
-                break
-            lines.append(line)
-        except EOFError:
-            break
-    folder_links = '\n'.join(lines)
+    print("Please enter the path to your Eagle library root folder (e.g. E:/AIGC_Project/Library):")
+    eagle_root = input().strip()
+    while not os.path.exists(eagle_root):
+        print("Error: Directory does not exist! Please re-enter:")
+        eagle_root = input().strip()
+    print("Please paste Eagle folder links here, separated by space. Then press Enter:")
+    folder_links = input().strip()
     target_folder_ids = parse_folder_links(folder_links)
-    library_path = input("请输入Eagle资料库根目录路径：").strip()
-    process_eagle_rename(library_path, target_folder_ids)
-    print("重命名完成！") 
+    process_eagle_rename(eagle_root, target_folder_ids)
+    print("Batch renaming completed!") 
