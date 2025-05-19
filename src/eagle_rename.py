@@ -105,6 +105,20 @@ def process_eagle_rename(library_path, target_folder_ids):
             os.rename(thumb_img, new_thumb_img)
         # 可选：日志输出
 
+def print_folder_tree(root_ids, eagle_metadata):
+    """打印目录树结构，供用户确认"""
+    def dfs(folders, level=0, parent_selected=False):
+        for folder in folders:
+            selected = folder['id'] in root_ids or parent_selected
+            if selected:
+                print('  ' * level + '- ' + folder['name'])
+            if folder.get('children'):
+                dfs(folder['children'], level+1, selected)
+    print("\nThe following folders (and their subfolders) will be processed:")
+    dfs(eagle_metadata['folders'])
+    print("\nPlease confirm the above folders. Press Enter to continue, or Ctrl+C to cancel.")
+    input()
+
 if __name__ == "__main__":
     args = get_args()
     eagle_root = args.root
@@ -119,5 +133,9 @@ if __name__ == "__main__":
         print("Please paste Eagle folder links here, separated by space. Then press Enter:")
         folder_links = input().strip()
     target_folder_ids = parse_folder_links(folder_links)
+    # 打印目录树供用户确认
+    with open(os.path.join(eagle_root, 'metadata.json'), 'r', encoding='utf-8') as f:
+        eagle_metadata = json.load(f)
+    print_folder_tree(target_folder_ids, eagle_metadata)
     process_eagle_rename(eagle_root, target_folder_ids)
     print("Batch renaming completed!") 
