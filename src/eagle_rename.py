@@ -31,16 +31,19 @@ def get_args():
 
 def get_all_subfolder_ids(root_ids, eagle_metadata):
     """递归获取所有子目录ID（含自身）"""
-    result = set()
+    result = set(root_ids)  # 首先添加所有根目录ID
     def dfs(folders):
         for folder in folders:
+            # 如果当前目录在目标ID列表中，添加其所有子目录
             if folder['id'] in root_ids:
-                result.add(folder['id'])
                 if folder.get('children'):
-                    dfs(folder['children'])
-            else:
-                if folder.get('children'):
-                    dfs(folder['children'])
+                    for child in folder['children']:
+                        result.add(child['id'])
+                        if child.get('children'):
+                            dfs([child])
+            # 继续检查其他目录
+            elif folder.get('children'):
+                dfs(folder['children'])
     dfs(eagle_metadata['folders'])
     return result
 
@@ -54,6 +57,8 @@ def process_eagle_rename(library_path, target_folder_ids):
     with open(os.path.join(library_path, 'metadata.json'), 'r', encoding='utf-8') as f:
         eagle_metadata = json.load(f)
     all_target_ids = get_all_subfolder_ids(target_folder_ids, eagle_metadata)
+    print(f"\n目标目录ID列表：{target_folder_ids}")
+    print(f"包含子目录后的完整ID列表：{all_target_ids}")
 
     # 2. 遍历所有图片文件夹
     images_root = os.path.join(library_path, 'images')
