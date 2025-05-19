@@ -60,10 +60,16 @@ def process_eagle_rename(library_path, target_folder_ids):
     image_folders = find_image_folders(images_root)
     group_used_names = defaultdict(set)
     ai_client = AIClient(use_ollama=USE_OLLAMA)
+    
+    # 统计信息
+    total_images = len(image_folders)
+    processed_images = 0
+    skipped_images = 0
 
     for folder in tqdm(image_folders, desc="Eagle AI重命名"):
         meta_path = os.path.join(folder, 'metadata.json')
         if not os.path.exists(meta_path):
+            skipped_images += 1
             continue
         with open(meta_path, 'r', encoding='utf-8') as f:
             meta = json.load(f)
@@ -71,6 +77,7 @@ def process_eagle_rename(library_path, target_folder_ids):
         folder_ids = set(meta.get('folders', []))
         group_ids = folder_ids & all_target_ids
         if not group_ids:
+            skipped_images += 1
             continue
         # 只取第一个组（如有多个目录归属，按主目录处理）
         group_id = list(group_ids)[0]
@@ -103,7 +110,14 @@ def process_eagle_rename(library_path, target_folder_ids):
         if os.path.exists(thumb_img):
             new_thumb_img = os.path.join(folder, f"{new_name}_thumbnail.{ext}")
             os.rename(thumb_img, new_thumb_img)
-        # 可选：日志输出
+        processed_images += 1
+
+    # 打印处理结果统计
+    print(f"\n处理完成！")
+    print(f"总图片数：{total_images}")
+    print(f"已处理：{processed_images}")
+    print(f"已跳过：{skipped_images}（不在目标目录中）")
+    print("\n✓ 批量重命名完成！")
 
 def print_folder_tree(root_ids, eagle_metadata):
     """打印目录树结构，供用户确认"""
@@ -114,9 +128,9 @@ def print_folder_tree(root_ids, eagle_metadata):
                 print('  ' * level + '- ' + folder['name'])
             if folder.get('children'):
                 dfs(folder['children'], level+1, selected)
-    print("\nThe following folders (and their subfolders) will be processed:")
+    print("\n将处理以下目录（及其子目录）：")
     dfs(eagle_metadata['folders'])
-    print("\nPlease confirm the above folders. Press Enter to continue, or Ctrl+C to cancel.")
+    print("\n请确认以上目录。按回车继续，或按 Ctrl+C 取消。")
     input()
 
 def find_eagle_library_root(path):
@@ -182,5 +196,4 @@ if __name__ == "__main__":
     with open(os.path.join(eagle_root, 'metadata.json'), 'r', encoding='utf-8') as f:
         eagle_metadata = json.load(f)
     print_folder_tree(target_folder_ids, eagle_metadata)
-    process_eagle_rename(eagle_root, target_folder_ids)
-    print("\n✓ 批量重命名完成！") 
+    process_eagle_rename(eagle_root, target_folder_ids) 
