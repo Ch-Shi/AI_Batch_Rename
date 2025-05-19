@@ -125,9 +125,19 @@ def find_eagle_library_root(path):
     path = path.strip('"').strip("'")
     # 转换为绝对路径
     path = os.path.abspath(path)
+    
     # 如果是文件，先获取其所在目录
     if os.path.isfile(path):
         path = os.path.dirname(path)
+    
+    # 如果是.info目录，继续向上查找
+    if path.endswith('.info'):
+        path = os.path.dirname(path)
+    
+    # 如果是images目录，继续向上查找
+    if os.path.basename(path) == 'images':
+        path = os.path.dirname(path)
+    
     # 向上查找.library目录
     while True:
         if os.path.isdir(path) and path.lower().endswith('.library'):
