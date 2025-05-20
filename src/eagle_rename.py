@@ -7,7 +7,7 @@ from core.ai_client import AIClient
 from config import USE_OLLAMA, MAX_RETRIES, SUPPORTED_FORMATS
 from tqdm import tqdm
 from colorama import init, Fore, Style
-from utils.enhanced_logger import enhanced_logger  # 引入新的增强日志模块
+from utils.enhanced_logger import enhanced_logger, LogType  # 正确导入LogType
 
 init(autoreset=True)
 
@@ -89,14 +89,14 @@ def process_eagle_rename(library_path, target_folder_ids):
     
     # 记录目标目录信息到日志
     enhanced_logger.log(
-        enhanced_logger.LogType.INFO,
+        LogType.INFO,
         f"开始处理Eagle资料库: {os.path.basename(library_path)}",
         context="session_info",
         file_path=library_path
     )
     for tid in target_folder_ids:
         enhanced_logger.log(
-            enhanced_logger.LogType.INFO,
+            LogType.INFO,
             f"目标目录: {id2name.get(tid, '[未知目录]')} ({tid})",
             context="target_folder",
             is_console=False  # 不在控制台显示，只记录到日志
@@ -200,7 +200,7 @@ def process_eagle_rename(library_path, target_folder_ids):
         
         # 记录处理开始
         enhanced_logger.log(
-            enhanced_logger.LogType.INFO,
+            LogType.INFO,
             f"开始处理图片: {os.path.basename(main_img)}",
             context="process_start",
             file_path=main_img,
@@ -233,7 +233,7 @@ def process_eagle_rename(library_path, target_folder_ids):
             
             # 记录生成的建议名称
             enhanced_logger.log(
-                enhanced_logger.LogType.INFO,
+                LogType.INFO,
                 f"AI生成名称: {new_name} (原名: {old_name})",
                 context="name_suggestion",
                 file_path=main_img,
