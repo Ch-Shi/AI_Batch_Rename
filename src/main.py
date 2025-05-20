@@ -16,12 +16,24 @@ from utils.logger import logger
 from token_monitor import token_monitor
 
 def get_image_files(directory):
-    """获取目录下所有支持的图片文件"""
+    """只获取ALLOWED_EXTENSIONS里的图片格式，不支持的格式写入日志，不过滤缩略图和(1)结尾的图片"""
     image_files = []
+    unsupported_files = []
     for root, _, files in os.walk(directory):
         for file in files:
-            if any(file.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS):
-                image_files.append(os.path.join(root, file))
+            file_path = os.path.join(root, file)
+            ext = os.path.splitext(file)[1].lower()
+            # 只处理允许的图片格式
+            if ext not in ALLOWED_EXTENSIONS:
+                # 记录不支持的图片格式
+                unsupported_files.append(file_path)
+                continue
+            image_files.append(file_path)
+    # 记录不支持的图片格式到日志
+    if unsupported_files:
+        with open('rename_failures.log', 'a', encoding='utf-8') as f:
+            for uf in unsupported_files:
+                f.write(f"[不支持的图片格式] {uf}\n")
     return sorted(image_files)
 
 def process_image(image_path, ai_client, mode, add_index, index=None):
