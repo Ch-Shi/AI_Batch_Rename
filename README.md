@@ -1,131 +1,92 @@
-# AI Image Batch Rename Tool
+# Eagle AI 批量重命名工具
 
-[English](README.md) | [中文](README_ZH.md)
+这是一个基于 AI 的 Eagle 资源库图片批量重命名工具。它能够智能分析图片内容，并根据分析结果自动生成合适的文件名。
 
-An AI-powered image renaming tool that supports both local Ollama service and Silicon Flow API for image analysis and renaming.
+## 主要功能
 
-## Features
+- 🤖 基于 AI 的图片内容分析
+- 📝 智能生成符合内容的文件名
+- 🗂 支持批量处理指定文件夹及其子文件夹
+- 🔄 自动处理主图、缩略图和元数据文件
+- 📊 详细的操作日志和统计信息
+- 🛡 完善的错误处理和回滚机制
 
-- Supports multiple image formats (jpg, jpeg, png, gif, bmp, webp)
-- Multiple renaming modes:
-  - Override mode: Use AI-generated names directly
-  - Prefix mode: Keep original filename with AI-generated name as prefix
-  - Index mode: Add sequential numbers (001-999) to new names
-- Batch processing support
-- Real-time progress display
-- Detailed error logging
-- Support for both local Ollama service and Silicon Flow API
+## 系统要求
 
-## System Requirements
+- Python 3.8 或更高版本
+- Eagle 3.0 或更高版本
+- Windows/macOS/Linux
 
-- Python 3.8 or higher
-- Windows operating system
-- Ollama (if using Ollama service)
+## 安装说明
 
-## Installation
-
-1. Clone or download this repository
-
-2. Install dependencies:
+1. 克隆或下载本项目到本地
+2. 安装依赖包：
 ```bash
 pip install -r requirements.txt
 ```
 
-3. If using Ollama service:
-   - Install Ollama (https://ollama.ai/)
-   - Download required model:
-     ```bash
-     ollama pull qwen2.5vl:3b
-     ```
+## 使用方法
 
-4. If using Silicon Flow API:
-   - Configure your API Key in `src/config.py`
-   - Set `USE_OLLAMA` to `False`
-
-## Usage
-
-### Method 1: Using Batch File (Recommended)
-
-1. Double-click to run `start.bat`
-2. Select renaming mode from the menu:
-   - [1] Override mode: Use new name directly
-   - [2] Prefix mode: Keep original filename
-   - [3] Add index: Add sequential numbers
-   - [4] Exit program
-3. Drag and drop image folder into the window, press Enter to start processing
-
-### Method 2: Command Line
-
+1. 启动 Eagle 软件
+2. 运行程序：
 ```bash
-python src/main.py -i "image_folder_path" -m [override|prefix] -n
+python src/eagle_rename.py
 ```
+3. 按提示输入 Eagle 资料库路径（可直接拖入文件夹）
+4. 输入要处理的文件夹链接（支持以下格式）：
+   - `eagle://folder/XXXXXXXX`
+   - `http://localhost:41595/folder?id=XXXXXXXX`
+   - 多个文件夹链接可用空格分隔
 
-Parameters:
-- `-i` or `--input_dir`: Input image folder path (required)
-- `-m` or `--mode`: Renaming mode (optional)
-  - `override`: Override mode (default)
-  - `prefix`: Prefix mode
-- `-n` or `--add_index`: Add sequential numbers (optional)
+## 功能特点
 
-## Log Files
+### 智能重命名
+- 使用 AI 分析图片内容
+- 自动生成符合内容的文件名
+- 避免重复名称
+- 保持文件扩展名不变
 
-The program generates the following log files:
-- `rename.log`: Main log file, records all operations
-- `rename_failures.log`: Records failed renaming operations
-- `token_usage.log`: Records token usage (only when using Silicon Flow API)
+### 完整性保护
+- 同步更新主图、缩略图和元数据
+- 出错时自动回滚所有更改
+- 保持文件关联完整性
 
-## Configuration
+### 日志记录
+- 详细的操作日志
+- 处理统计信息
+- 错误追踪和诊断
 
-Configuration file is located at `src/config.py`, main settings include:
+## 注意事项
 
-### General Settings
-- `SUPPORTED_FORMATS`: Supported image formats
-- `DEFAULT_MODE`: Default renaming mode
-- `IMAGE_PROCESS_DELAY`: Delay between image processing
-- `MAX_OUTPUT_TOKENS`: Output token limit
+1. 使用前请确保已备份重要数据
+2. 确保 Eagle 软件处于运行状态
+3. 建议先在小范围测试后再进行大批量处理
+4. 处理过程中请勿手动修改相关文件
 
-### API Settings
-- `USE_OLLAMA`: Whether to use Ollama service
-- `OLLAMA_MODEL`: Ollama model name
-- `SILICON_FLOW_API_KEY`: Silicon Flow API key
-- `SILICON_FLOW_MODEL`: Silicon Flow model name
+## 常见问题
 
-## Notes
+**Q: 为什么有些图片被跳过了？**
+A: 可能的原因包括：
+- 文件不在指定目录中
+- 文件格式不受支持
+- 文件已被标记为删除
+- AI 分析失败
 
-1. When using Ollama service:
-   - Ensure Ollama service is running
-   - Recommended to use local model for faster processing
-   - No token usage limits
+**Q: 支持哪些图片格式？**
+A: 支持 Eagle 支持的常见图片格式，包括：
+- JPG/JPEG
+- PNG
+- WebP
+- GIF
+等
 
-2. When using Silicon Flow API:
-   - Valid API Key required
-   - Be mindful of token usage limits
-   - Adjust processing delay as needed
+## 技术支持
 
-3. File naming:
-   - Invalid characters are automatically removed
-   - Timestamp is added if new filename already exists
-   - Regular backups recommended
+如遇到问题，请：
+1. 查看日志文件了解详细错误信息
+2. 在项目 Issues 页面提交问题
+3. 提供相关的日志信息和复现步骤
 
-## Troubleshooting
+## 许可证
 
-1. If "Ollama service not running" error occurs:
-   - Check if Ollama is properly installed
-   - Manually start Ollama service: `ollama serve`
-
-2. If processing is slow:
-   - Check network connection
-   - Adjust `IMAGE_PROCESS_DELAY` parameter
-   - Consider using local Ollama service
-
-3. If encoding errors occur:
-   - Ensure system uses UTF-8 encoding
-   - Check for special characters in filenames
-
-## License
-
-MIT License
-
-## Chinese Documentation
-
-For Chinese documentation, please see [README_CN.md](README_CN.md). 
+本项目采用 MIT 许可证 
